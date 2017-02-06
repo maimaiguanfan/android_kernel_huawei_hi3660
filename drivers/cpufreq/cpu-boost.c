@@ -179,6 +179,9 @@ static void do_input_boost_rem(struct work_struct *work)
 	unsigned int i;
 	struct cpu_sync *i_sync_info;
 
+	if (!input_boost_ms)
+		return;
+
 	/* Reset the input_boost_min for all CPUs in the system */
 	pr_debug("Resetting input boost min for all CPUs\n");
 	for_each_possible_cpu(i) {
