@@ -666,7 +666,7 @@ u32 rdr_get_reboot_type(void)
 {
 	return g_reboot_type;
 }
-
+/*
 static int __init early_parse_reboot_reason_cmdline(char *reboot_reason_cmdline)
 {
 	int i;
@@ -684,7 +684,7 @@ static int __init early_parse_reboot_reason_cmdline(char *reboot_reason_cmdline)
 	return 0;
 }
 
-early_param("reboot_reason", early_parse_reboot_reason_cmdline);
+early_param("reboot_reason", early_parse_reboot_reason_cmdline);*/
 
 void *bbox_vmap(phys_addr_t paddr, size_t size)
 {

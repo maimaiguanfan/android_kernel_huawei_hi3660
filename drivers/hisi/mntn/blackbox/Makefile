@@ -9,7 +9,7 @@ obj-$(CONFIG_HISI_BB) += rdr_module_core.o
 obj-$(CONFIG_HISI_BB) += rdr_dump_core.o
 obj-$(CONFIG_HISI_BB) += rdr_logmonitor_core.o
 obj-$(CONFIG_HISI_BB) += rdr_field_core.o
-obj-$(CONFIG_HISI_BB) += rdr_bootcheck.o
+#obj-$(CONFIG_HISI_BB) += rdr_bootcheck.o
 
 obj-$(CONFIG_HISI_BB_DEBUG) += rdr_debug.o
 obj-$(CONFIG_HISI_BB_DEBUG) += rdr_demo.o
