@@ -4132,6 +4132,11 @@ void cpufreq_add_update_util_hook(int cpu, struct update_util_data *data,
 void cpufreq_remove_update_util_hook(int cpu);
 #endif /* CONFIG_CPU_FREQ */
 
+#ifdef CONFIG_DYNAMIC_STUNE_BOOST
+int do_stune_boost(char *st_name, int boost);
+int reset_stune_boost(char *st_name);
+#endif /* CONFIG_DYNAMIC_STUNE_BOOST */
+
 #ifdef CONFIG_SCHED_HWSTATUS
 extern void sched_hwstatus_iodelay_caller(struct task_struct *tsk, u64 delta);
 extern void sched_account_ui_thread_io_block_counts(int msecs);
