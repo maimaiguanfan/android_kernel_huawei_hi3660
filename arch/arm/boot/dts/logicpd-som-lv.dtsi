@@ -106,6 +106,7 @@
 		twl_audio: audio {
 			compatible = "ti,twl4030-audio";
 			codec {
+				ti,hs_extmute_gpio = <&gpio2 25 GPIO_ACTIVE_HIGH>;
 			};
 		};
 	};
