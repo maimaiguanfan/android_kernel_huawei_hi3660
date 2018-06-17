@@ -32,3 +32,4 @@ obj-$(CONFIG_CPU_FREQ_GOV_BLU_SCHEDUTIL) += cpufreq_blu_schedutil.o
 obj-$(CONFIG_HISI_CORE_CTRL) += hisi_core_ctl.o
 obj-$(CONFIG_HISI_RTG) += hisi_rtg.o
 obj-y += frame/
+obj-y += boost.o
