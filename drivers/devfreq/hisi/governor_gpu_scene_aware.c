@@ -23,10 +23,6 @@
 
 #include <linux/hisi/hisi_devfreq.h>
 
-#ifdef CONFIG_HUAWEI_DUBAI
-#include <chipset_common/dubai/dubai.h>
-#endif
-
 #define DEFAULT_GO_HISPEED_LOAD		90
 #define DEFAULT_HISPEED_FREQ		533000000
 #define DEFAULT_VSYNC_EQULALIZE		45
@@ -42,7 +38,7 @@
 #define DFMO_DEFAULT_OPENCL_BOOST_FREQ	(415000000)
 #define SURPORT_POLICY_NUM		20
 #define SURPORT_NTARGET_LOAD_MAX	40
-#define POLICY_BUF_MAX			1024
+#define POLICY_BUF_MAX			2048
 #define POLICY_ID_BUF_MAX		10
 
 
@@ -89,12 +85,6 @@ struct devfreq_gpu_scene_aware_data {
 static int devfreq_get_dev_status(struct devfreq *df, struct devfreq_dev_status* stat)
 {
 	int err = df->profile->get_dev_status(df->dev.parent, stat);
-
-#ifdef CONFIG_HUAWEI_DUBAI
-	if (stat->busy_time && stat->current_frequency)
-		dubai_update_gpu_info(stat->current_frequency, stat->busy_time,
-			stat->total_time, df->profile->polling_ms);
-#endif
 
 	return err;
 }
@@ -695,11 +685,6 @@ static int devfreq_gpu_scene_aware_handler(struct devfreq *devfreq,
 
 	case DEVFREQ_GOV_SUSPEND:
 	{
-	#ifdef CONFIG_HUAWEI_DUBAI
-		/* we have to get the busy/freq info and report to dubai before devfreq suspend. */
-		struct devfreq_dev_status stat;
-		devfreq_get_dev_status(devfreq, &stat);
-	#endif
 		devfreq_monitor_suspend(devfreq);
 		break;
 	}
