@@ -34,6 +34,7 @@
 #include <linux/wakelock.h>
 #include <asm/irq.h>
 #include <linux/hisi/util.h>
+#include <linux/dt2w.h>
 #include <linux/kthread.h>
 #include <linux/syscalls.h>
 #include <linux/hisi/hisi_bootup_keypoint.h>
@@ -422,6 +423,7 @@ static int hisi_powerkey_probe(struct platform_device *pdev)
 		ret = -ENOENT;
 		goto input_err;
 	}
+	register_power_input(info->idev);
 
 	platform_set_drvdata(pdev, info);
 
