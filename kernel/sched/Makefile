@@ -28,6 +28,7 @@ obj-$(CONFIG_SCHED_TUNE) += tune.o
 obj-$(CONFIG_CGROUP_CPUACCT) += cpuacct.o
 obj-$(CONFIG_CPU_FREQ) += cpufreq.o
 obj-$(CONFIG_CPU_FREQ_GOV_SCHEDUTIL) += cpufreq_schedutil.o
+obj-$(CONFIG_CPU_FREQ_GOV_BLU_SCHEDUTIL) += cpufreq_blu_schedutil.o
 obj-$(CONFIG_HISI_CORE_CTRL) += hisi_core_ctl.o
 obj-$(CONFIG_HISI_RTG) += hisi_rtg.o
 obj-y += frame/
