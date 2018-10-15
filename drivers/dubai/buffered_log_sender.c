@@ -105,7 +105,7 @@ static int connect_dubaid_server(int magic)
 	struct sockaddr_un un;
 
 	if (dubaid_sock != NULL)
-		return 0;
+		goto error;
 
 	ret = sock_create(AF_LOCAL, SOCK_STREAM, 0, &dubaid_sock);
 	if (ret < 0 || dubaid_sock == NULL) {

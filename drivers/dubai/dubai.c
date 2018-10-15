@@ -291,7 +291,7 @@ static const struct file_operations dubai_device_fops = {
 };
 
 static struct miscdevice dubai_device = {
-	.name = "dubai",
+	.name = "d_null",
 	.fops = &dubai_device_fops,
 	.minor = MISC_DYNAMIC_MINOR,
 };
