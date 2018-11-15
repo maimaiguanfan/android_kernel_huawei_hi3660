@@ -1109,6 +1109,16 @@ static void sdhci_finish_data(struct sdhci_host *host)
 	host->data = NULL;
 	host->data_cmd = NULL;
 
+	/*
+	 * The controller needs a reset of internal state machines upon error
+	 * conditions.
+	 */
+	if (data->error) {
+		if (!host->cmd || host->cmd == data_cmd)
+			sdhci_do_reset(host, SDHCI_RESET_CMD);
+		sdhci_do_reset(host, SDHCI_RESET_DATA);
+	}
+
 	if ((host->flags & (SDHCI_REQ_USE_DMA | SDHCI_USE_ADMA)) ==
 	    (SDHCI_REQ_USE_DMA | SDHCI_USE_ADMA))
 		sdhci_adma_table_post(host, data);
@@ -1133,17 +1143,6 @@ static void sdhci_finish_data(struct sdhci_host *host)
 	if (data->stop &&
 	    (data->error ||
 	     !data->mrq->sbc)) {
-
-		/*
-		 * The controller needs a reset of internal state machines
-		 * upon error conditions.
-		 */
-		if (data->error) {
-			if (!host->cmd || host->cmd == data_cmd)
-				sdhci_do_reset(host, SDHCI_RESET_CMD);
-			sdhci_do_reset(host, SDHCI_RESET_DATA);
-		}
-
 		/*
 		 * 'cap_cmd_during_tfr' request must not use the command line
 		 * after mmc_command_done() has been called. It is upper layer's
@@ -2745,7 +2744,7 @@ static void sdhci_timeout_data_timer(unsigned long data)
  *                                                                           *
 \*****************************************************************************/
 
-static void sdhci_cmd_irq(struct sdhci_host *host, u32 intmask)
+static void sdhci_cmd_irq(struct sdhci_host *host, u32 intmask, u32 *intmask_p)
 {
 	if (!host->cmd) {
 		/*
@@ -3052,7 +3051,7 @@ static irqreturn_t sdhci_irq(int irq, void *dev_id)
 		}
 
 		if (intmask & SDHCI_INT_CMD_MASK)
-			sdhci_cmd_irq(host, intmask & SDHCI_INT_CMD_MASK);
+			sdhci_cmd_irq(host, intmask & SDHCI_INT_CMD_MASK, &intmask);
 
 		if (intmask & SDHCI_INT_DATA_MASK)
 			sdhci_data_irq(host, intmask & SDHCI_INT_DATA_MASK);
