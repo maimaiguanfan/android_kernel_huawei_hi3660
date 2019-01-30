@@ -138,7 +138,7 @@ static void ipvlan_port_destroy(struct net_device *dev)
 
 	dev->priv_flags &= ~IFF_IPVLAN_MASTER;
 	if (port->mode == IPVLAN_MODE_L3S) {
-		dev->priv_flags &= ~IFF_L3MDEV_MASTER;
+		dev->priv_flags &= ~IFF_L3MDEV_RX_HANDLER;
 		ipvlan_unregister_nf_hook();
 		dev->l3mdev_ops = NULL;
 	}
