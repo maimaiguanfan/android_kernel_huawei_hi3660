@@ -2243,6 +2243,13 @@ relock:
 		goto relock;
 	}
 
+	/* Has this task already been marked for death? */
+	if (signal_group_exit(signal)) {
+		ksig->info.si_signo = signr = SIGKILL;
+		sigdelset(&current->pending.signal, SIGKILL);
+		recalc_sigpending();
+		goto fatal;
+	}
 	for (;;) {
 		struct k_sigaction *ka;
 
