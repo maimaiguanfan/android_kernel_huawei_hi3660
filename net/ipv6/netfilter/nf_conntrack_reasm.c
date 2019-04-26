@@ -51,14 +51,6 @@
 
 static const char nf_frags_cache_name[] = "nf-frags";
 
-struct nf_ct_frag6_skb_cb
-{
-	struct inet6_skb_parm	h;
-	int			offset;
-};
-
-#define NFCT_FRAG6_CB(skb)	((struct nf_ct_frag6_skb_cb *)((skb)->cb))
-
 static struct inet_frags nf_frags;
 
 #ifdef CONFIG_SYSCTL
@@ -146,6 +138,9 @@ static void __net_exit nf_ct_frags6_sysctl_unregister(struct net *net)
 }
 #endif
 
+static int nf_ct_frag6_reasm(struct frag_queue *fq, struct sk_buff *skb,
+			     struct sk_buff *prev_tail, struct net_device *dev);
+
 static inline u8 ip6_frag_ecn(const struct ipv6hdr *ipv6h)
 {
 	return 1 << (ipv6_get_dsfield(ipv6h) & INET_ECN_MASK);
@@ -211,9 +206,10 @@ static inline struct frag_queue *fq_find(struct net *net, __be32 id,
 static int nf_ct_frag6_queue(struct frag_queue *fq, struct sk_buff *skb,
 			     const struct frag_hdr *fhdr, int nhoff)
 {
-	struct sk_buff *prev, *next;
 	unsigned int payload_len;
-	int offset, end;
+	struct net_device *dev;
+	struct sk_buff *prev;
+	int offset, end, err;
 	u8 ecn;
 
 	if (fq->q.flags & INET_FRAG_COMPLETE) {
@@ -288,55 +284,19 @@ static int nf_ct_frag6_queue(struct frag_queue *fq, struct sk_buff *skb,
 		goto err;
 	}
 
-	/* Find out which fragments are in front and at the back of us
-	 * in the chain of fragments so far.  We must know where to put
-	 * this fragment, right?
-	 */
+	/* Note : skb->rbnode and skb->dev share the same location. */
+	dev = skb->dev;
+	/* Makes sure compiler wont do silly aliasing games */
+	barrier();
+
 	prev = fq->q.fragments_tail;
-	if (!prev || NFCT_FRAG6_CB(prev)->offset < offset) {
-		next = NULL;
-		goto found;
-	}
-	prev = NULL;
-	for (next = fq->q.fragments; next != NULL; next = next->next) {
-		if (NFCT_FRAG6_CB(next)->offset >= offset)
-			break;	/* bingo! */
-		prev = next;
-	}
+	err = inet_frag_queue_insert(&fq->q, skb, offset, end);
+	if (err)
+		goto insert_error;
 
-found:
-	/* RFC5722, Section 4:
-	 *                                  When reassembling an IPv6 datagram, if
-	 *   one or more its constituent fragments is determined to be an
-	 *   overlapping fragment, the entire datagram (and any constituent
-	 *   fragments, including those not yet received) MUST be silently
-	 *   discarded.
-	 */
+	if (dev)
+		fq->iif = dev->ifindex;
 
-	/* Check for overlap with preceding fragment. */
-	if (prev &&
-	    (NFCT_FRAG6_CB(prev)->offset + prev->len) > offset)
-		goto discard_fq;
-
-	/* Look for overlap with succeeding segment. */
-	if (next && NFCT_FRAG6_CB(next)->offset < end)
-		goto discard_fq;
-
-	NFCT_FRAG6_CB(skb)->offset = offset;
-
-	/* Insert this fragment in the chain of fragments. */
-	skb->next = next;
-	if (!next)
-		fq->q.fragments_tail = skb;
-	if (prev)
-		prev->next = skb;
-	else
-		fq->q.fragments = skb;
-
-	if (skb->dev) {
-		fq->iif = skb->dev->ifindex;
-		skb->dev = NULL;
-	}
 	fq->q.stamp = skb->tstamp;
 	fq->q.meat += skb->len;
 	fq->ecn |= ecn;
@@ -352,11 +312,25 @@ found:
 		fq->q.flags |= INET_FRAG_FIRST_IN;
 	}
 
-	return 0;
+	if (fq->q.flags == (INET_FRAG_FIRST_IN | INET_FRAG_LAST_IN) &&
+	    fq->q.meat == fq->q.len) {
+		unsigned long orefdst = skb->_skb_refdst;
 
-discard_fq:
+		skb->_skb_refdst = 0UL;
+		err = nf_ct_frag6_reasm(fq, skb, prev, dev);
+		skb->_skb_refdst = orefdst;
+		return err;
+	}
+
+	skb_dst_drop(skb);
+	return -EINPROGRESS;
+
+insert_error:
+	if (err == IPFRAG_DUP)
+		goto err;
 	inet_frag_kill(&fq->q, &nf_frags);
 err:
+	skb_dst_drop(skb);
 	return -EINVAL;
 }
 
@@ -495,7 +469,6 @@ find_prev_fhdr(struct sk_buff *skb, u8 *prevhdrp, int *prevhoff, int *fhoff)
 int nf_ct_frag6_gather(struct net *net, struct sk_buff *skb, u32 user)
 {
 	u16 savethdr = skb->transport_header;
-	struct net_device *dev = skb->dev;
 	int fhoff, nhoff, ret;
 	struct frag_hdr *fhdr;
 	struct frag_queue *fq;
