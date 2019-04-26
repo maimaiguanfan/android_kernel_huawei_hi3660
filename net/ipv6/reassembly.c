@@ -57,7 +57,7 @@
 #include <net/rawv6.h>
 #include <net/ndisc.h>
 #include <net/addrconf.h>
-#include <net/inet_frag.h>
+#include <net/ipv6_frag.h>
 #include <net/inet_ecn.h>
 
 static const char ip6_frag_cache_name[] = "ip6-frags";
@@ -123,7 +123,7 @@ static void ip6_frag_expire(unsigned long data)
 	fq = container_of((struct inet_frag_queue *)data, struct frag_queue, q);
 	net = container_of(fq->q.net, struct net, ipv6.frags);
 
-	ip6_expire_frag_queue(net, fq, &ip6_frags);
+	ip6frag_expire_frag_queue(net, fq &ip6_frags);
 }
 
 static struct frag_queue *

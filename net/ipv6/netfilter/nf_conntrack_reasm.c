@@ -33,9 +33,8 @@
 
 #include <net/sock.h>
 #include <net/snmp.h>
-#include <net/inet_frag.h>
+#include <net/ipv6_frag.h>
 
-#include <net/ipv6.h>
 #include <net/protocol.h>
 #include <net/transp_v6.h>
 #include <net/rawv6.h>
@@ -177,7 +176,7 @@ static void nf_ct_frag6_expire(unsigned long data)
 	fq = container_of((struct inet_frag_queue *)data, struct frag_queue, q);
 	net = container_of(fq->q.net, struct net, nf_frag.frags);
 
-	ip6_expire_frag_queue(net, fq, &nf_frags);
+	ip6frag_expire_frag_queue(net, fq &nf_frags);
 }
 
 /* Creation primitives. */
