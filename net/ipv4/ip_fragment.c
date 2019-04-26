@@ -56,14 +56,6 @@
  */
 static const char ip_frag_cache_name[] = "ip4-frags";
 
-struct ipfrag_skb_cb
-{
-	struct inet_skb_parm	h;
-	int			offset;
-};
-
-#define FRAG_CB(skb)	((struct ipfrag_skb_cb *)((skb)->cb))
-
 /* Describe an entry in the "incomplete datagrams" queue. */
 struct ipq {
 	struct inet_frag_queue q;
@@ -376,7 +368,7 @@ static int ip_frag_queue(struct ipq *qp, struct sk_buff *skb)
 		 */
 		if (end < qp->q.len ||
 		    ((qp->q.flags & INET_FRAG_LAST_IN) && end != qp->q.len))
-			goto err;
+			goto discard_qp;
 		qp->q.flags |= INET_FRAG_LAST_IN;
 		qp->q.len = end;
 	} else {
@@ -641,7 +633,7 @@ static int ip_frag_reasm(struct ipq *qp, struct sk_buff *prev,
 	 * from one very small df-fragment and one large non-df frag.
 	 */
 	if (qp->max_df_size == qp->q.max_size) {
-		IPCB(head)->flags |= IPSKB_FRAG_PMTU;
+		IPCB(skb)->flags |= IPSKB_FRAG_PMTU;
 		iph->frag_off = htons(IP_DF);
 	} else {
 		iph->frag_off = 0;
