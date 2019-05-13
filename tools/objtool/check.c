@@ -32,6 +32,8 @@
 #define STATE_FP_SETUP		0x2
 #define STATE_FENTRY		0x4
 
+#define FAKE_JUMP_OFFSET -1
+
 struct alternative {
 	struct list_head list;
 	struct instruction *insn;
@@ -568,9 +570,10 @@ static int handle_group_alt(struct objtool_file *file,
 	memset(fake_jump, 0, sizeof(*fake_jump));
 	INIT_LIST_HEAD(&fake_jump->alts);
 	fake_jump->sec = special_alt->new_sec;
-	fake_jump->offset = -1;
+	fake_jump->offset = FAKE_JUMP_OFFSET;
 	fake_jump->type = INSN_JUMP_UNCONDITIONAL;
 	fake_jump->jump_dest = list_next_entry(last_orig_insn, list);
+	fake_jump->func = orig_insn->func;
 
 	if (!special_alt->new_len) {
 		*new_insn = fake_jump;
