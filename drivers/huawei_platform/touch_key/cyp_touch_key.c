@@ -1797,12 +1797,17 @@ void touchkey_dsm_func(void)
 	cyp_report_dmd(CYTTSP_DSM_IRQ_I2C_ERR, DSM_TOUCHKEY_HANDLER_I2C_ERR);
 }
 
+/* 
+ * touch fix implemented by zxz0O0
+ * some devices did not properly update touch firmware, therefore did not correctly respond to requests
+ */
 static int cyttsp_button_probe(struct i2c_client *client)
 {
 	unsigned char val = 0;
 	struct device *dev = NULL;
 	int i = 0;
 	int error = 0;
+	int error2 = 0;
 	int pollution  = 0;
 	struct cyttsp_button_data *data = NULL;
 	struct cyttsp_button_platform_data *pdata = NULL;
@@ -1965,6 +1970,11 @@ static int cyttsp_button_probe(struct i2c_client *client)
 		/*to read old*/
 		error = cyttsp_i2c_recv(dev, 1, &val);
 		if (error != 0) {
+			data->client->addr = CYTTSP_POLLUTION_SLAVE_ADDR;
+			error2 = cyttsp_i2c_read_block(dev, CYTTSP_REG_WORKMODE, 1, &val);
+			hwlog_info("%s-%d: try with slave addr = %d\n", __func__, __LINE__, error2);
+		}
+		if (error != 0 && error2 != 0) {
 			data->client->addr = CYTTSP_NEW_BL_ADDR;
 			/*if old version bootloader addr is not connect ,then to read new*/
 			error = cyttsp_i2c_recv(dev, 1, &val);
@@ -1982,6 +1992,7 @@ static int cyttsp_button_probe(struct i2c_client *client)
 		} else {
 			/*check it is old version bootloader addr or new version app addr.*/
 			error = cyttsp_i2c_read_block(dev, CYTTSP_REG_LOCKDOWN_INFO, 1, &val);
+			hwlog_info("%s-%d: reg_lockdown error = %d, val = %d\n", __func__, __LINE__, error, val);
 			/*it is new version app addr,need go back bootloader mode*/
 			if(CYTTSP_NEW_VERSION_APP == val){
 				unsigned char switch_to_new_btld_cmd[CYTTSP_BTLD_CMD_BUFF] = {0x06, 0x2B, 0x2B, 0xFE, 0xFA};
@@ -1996,11 +2007,29 @@ static int cyttsp_button_probe(struct i2c_client *client)
 					in_bootloader = true;
 				}
 			}else{
-				in_bootloader = true;
-				data->client->addr = data->app_addr;
-				hwlog_info("%s-%d: get back client addr = 0x%02x\n", __func__, __LINE__,
-					data->client->addr);
-				hwlog_info("%s-%d: succ to read from btld addr, in btld mode\n", __func__, __LINE__);
+				if (data->client->addr == CYTTSP_POLLUTION_SLAVE_ADDR) {
+					/* cmd sequence to switch into btld mode: 0x2B, 0x2B, 0xFE, 0xFA */
+					unsigned char switch_to_btld_cmd[5] = {0x04, 0x2B, 0x2B, 0xFE, 0xFA};
+					hwlog_info("%s-%d: trying to switch slave in bl mode\n", __func__, __LINE__);
+					error = cyttsp_i2c_send(dev, sizeof(switch_to_btld_cmd), switch_to_btld_cmd);
+					if (error) {
+						cyp_report_dmd(CYTTSP_DSM_PROBE_I2C_ERR_2, DSM_TOUCHKEY_PROBE_I2C_ERR);
+						hwlog_err("%s-%d: fail to switch to bootloader\n", __func__, __LINE__);
+						goto err_write_no_sleep_mode;
+					} else {
+						hwlog_info("%s-%d: switch to btld ops mode already\n", __func__, __LINE__);
+					}
+					data->client->addr = pollution;
+					in_bootloader = true;
+                 	 		hwlog_info("%s-%d: data->client->addr = 0x%02x\n", __func__, __LINE__,
+						data->client->addr);
+				} else {
+					in_bootloader = true;
+					data->client->addr = data->app_addr;
+					hwlog_info("%s-%d: get back client addr = 0x%02x\n", __func__, __LINE__,
+						data->client->addr);
+					hwlog_info("%s-%d: succ to read from btld addr, in btld mode\n", __func__, __LINE__);
+				}
 			}
 		}
 	}else {
@@ -2138,6 +2167,6 @@ static void __exit cyttsp_button_exit(void)
 module_init(cyttsp_button_init);
 module_exit(cyttsp_button_exit);
 
-MODULE_AUTHOR("hwx370038, huzheng3@huawei.com");
+MODULE_AUTHOR("hwx370038, huzheng3@huawei.com, fixed by zxz0O0, ported to EMUI9 by maimaiguanfan");
 MODULE_DESCRIPTION("huawei cypress touch key driver");
 MODULE_LICENSE("GPL");
