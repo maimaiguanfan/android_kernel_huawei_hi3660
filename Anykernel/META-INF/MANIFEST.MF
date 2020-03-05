@@ -1,0 +1,39 @@
+Manifest-Version: 1.0
+Created-By: 1.0 (Android SignApk)
+
+Name: META-INF/com/google/android/updater-script
+SHA1-Digest: surH1Bs4hR30JclyYkFBB7d7164=
+
+Name: tools/unpackbootimg
+SHA1-Digest: +TC2YlSlRbE+pRiI67d9dLR3m4c=
+
+Name: anykernel.sh
+SHA1-Digest: 4+SPnPG/laoXD4jd79M0jq0PquU=
+
+Name: tools/ak2-core.sh
+SHA1-Digest: gucHJ8XcBvSEUaEnTbCGs9LgqjY=
+
+Name: META-INF/com/google/android/update-binary
+SHA1-Digest: OYdZsHqCfedqcA3CsNLw8qGljv4=
+
+Name: tools/avb/verity.x509.pem
+SHA1-Digest: NV1oajR1U4QczENf2LCU9UqvU+4=
+
+Name: tools/busybox
+SHA1-Digest: TYiNq4VI373hAFWox0lTZYgmhgg=
+
+Name: tools/BootSignature_Android.jar
+SHA1-Digest: j6t/6IOcpM7CdB5aHvVrJemFU4A=
+
+Name: tools/xz
+SHA1-Digest: Mw5WTMhdFqftdgcSzLLkUkyVlug=
+
+Name: tools/avb/verity.pk8
+SHA1-Digest: FD4qFHO2O+K6ZWXaq/e1LiJL+tM=
+
+Name: tools/lz4
+SHA1-Digest: SKi/bAyhuKyI7raNQZVvTcZYZp8=
+
+Name: tools/mkbootimg
+SHA1-Digest: TBUOJEBEmd4z0HASmwPi6jO3Hkc=
+
