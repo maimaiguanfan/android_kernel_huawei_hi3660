@@ -1,0 +1,27 @@
+#
+# Huawei kernel stp configuration
+#
+# sunhongqing <sunhongqing@huawei.com>
+#
+# Copyright (c) 2001-2021, Huawei Tech. Co., Ltd. All rights reserved.
+#
+
+menu "Huawei KERNEL STP"
+
+config HW_KERNEL_STP
+	tristate "enables Huawei KERNEL STP"
+	default n
+	help
+	  This option enables support for Huawei kernel stp in kernel space.
+	  Huawei kernel stp is a security threat perception module at kernel. 
+	  each source of threat can report the risk info to native throught the kernel stp   
+
+config HW_KERNEL_STP_ENG_DEBUG
+	bool "Huawei KERNEL STP for engineering mode debug"
+	depends on HW_KERNEL_STP
+	default n
+	help
+	  This option should only be enabled for engineering mode & debug test.
+	  In engineering mode, more debug info can be print for tester.
+
+endmenu

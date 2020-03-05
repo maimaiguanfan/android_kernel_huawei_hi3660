@@ -1,0 +1,6 @@
+config HW_DOUBLE_FREE_DYNAMIC_CHECK
+	bool "hw double free dynamic check"
+	default n
+	help
+	support double free check function.
+

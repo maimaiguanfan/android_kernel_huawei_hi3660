@@ -1,0 +1,7 @@
+config HW_SW_DEVICES
+    tristate "single-wire communicate Keyboard with UART in inputhub for CMR Product."
+    default n
+    bool "HUAWEI SW_DEVICES"
+    help
+	  This module adds support for single-wire communicate Keyboard for CMR Product based on
+	  HISI 960 chipset.

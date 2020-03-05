@@ -1,0 +1,6 @@
+config HUAWEI_PROC_CHECK_ROOT
+	bool "/proc/check_root support"
+	default n
+	help
+	support check_root setid function.
+
