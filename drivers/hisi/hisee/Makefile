@@ -2,7 +2,8 @@ EXTRA_CFLAGS 	+= -Idrivers/hisi/mntn/blackbox/platform_lpm3
 #LOCAL_C_INCLUDES += vendor/huawei/chipset_common/modules/libc_sec/include
 #LOCAL_CFLAGS += -Ivendor/huawei/chipset_common/modules/libc_sec/include
 
-subdir-ccflags-y              += -Wall -Werror
+#subdir-ccflags-y              += -Wall -Werror
+subdir-ccflags-y              += -Wall
 
 ifeq ($(TARGET_VERSION_MODE),factory)
 EXTRA_CFLAGS += -DCONFIG_HISI_HISEE_CHIPTEST_RT

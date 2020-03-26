@@ -163,7 +163,8 @@ $(warning HI110X_VERSION: $(HI110X_VERSION))
 EXTRA_CFLAGS = $(HI1102_INCLUDES)
 EXTRA_CFLAGS += $(COPTS) $(KBUILD_CFLAGS)
 EXTRA_CFLAGS += $(COMM_COPTS)
-EXTRA_CFLAGS += -Werror -Wuninitialized -Wempty-body -Wclobbered -Wmissing-parameter-type -Wold-style-declaration -Woverride-init -Wtype-limits
+#EXTRA_CFLAGS += -Werror -Wuninitialized -Wempty-body -Wclobbered -Wmissing-parameter-type -Wold-style-declaration -Woverride-init -Wtype-limits
+EXTRA_CFLAGS += -Wuninitialized -Wempty-body -Wclobbered -Wmissing-parameter-type -Wold-style-declaration -Woverride-init -Wtype-limits
 
 EXTRA_CFLAGS +=  -fno-pic
 MODFLAGS = -fno-pic

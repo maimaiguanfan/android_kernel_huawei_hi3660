@@ -3,7 +3,8 @@
 #
 
 subdir-ccflags-$(CONFIG_HISI_BB)               += -Idrivers/hisi/mntn/blackbox/
-subdir-ccflags-$(CONFIG_HISI_NOC)              += -Idrivers/hisi/mntn/ -Wall -Werror
+#subdir-ccflags-$(CONFIG_HISI_NOC)              += -Idrivers/hisi/mntn/ -Wall -Werror
+subdir-ccflags-$(CONFIG_HISI_NOC)              += -Idrivers/hisi/mntn/ -Wall
 
 obj-$(CONFIG_HISI_NOC) +=  hisi_noc.o             \
                            hisi_noc_err_probe.o       \
