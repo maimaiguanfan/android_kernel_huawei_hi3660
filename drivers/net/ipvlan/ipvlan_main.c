@@ -72,12 +72,12 @@ static int ipvlan_set_port_mode(struct ipvl_port *port, u16 nval)
 			err = ipvlan_register_nf_hook();
 			if (!err) {
 				mdev->l3mdev_ops = &ipvl_l3mdev_ops;
-				mdev->priv_flags |= IFF_L3MDEV_MASTER;
+				mdev->priv_flags |= IFF_L3MDEV_RX_HANDLER;
 			} else
 				return err;
 		} else if (port->mode == IPVLAN_MODE_L3S) {
 			/* Old mode was L3S */
-			mdev->priv_flags &= ~IFF_L3MDEV_MASTER;
+			mdev->priv_flags &= ~IFF_L3MDEV_RX_HANDLER;
 			ipvlan_unregister_nf_hook();
 			mdev->l3mdev_ops = NULL;
 		}
