@@ -680,7 +680,8 @@ static int sens_destroy(void *key, void *datum, void *p)
 	pfree(selinux_pool, key);
 	if (datum) {
 		levdatum = datum;
-		ebitmap_destroy(&levdatum->level->cat);
+		if (levdatum->level)
+			ebitmap_destroy(&levdatum->level->cat);
 		pfree(selinux_pool, levdatum->level);
 	}
 	pfree(selinux_pool, datum);
