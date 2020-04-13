@@ -169,8 +169,16 @@ nvmet_rdma_get_rsp(struct nvmet_rdma_queue *queue)
 	spin_lock_irqsave(&queue->rsps_lock, flags);
 	rsp = list_first_entry(&queue->free_rsps,
 				struct nvmet_rdma_rsp, free_list);
-	list_del(&rsp->free_list);
+	if (likely(rsp))
+		list_del(&rsp->free_list);
 	spin_unlock_irqrestore(&queue->rsps_lock, flags);
+
+	if (unlikely(!rsp)) {
+		rsp = kmalloc(sizeof(*rsp), GFP_KERNEL);
+		if (unlikely(!rsp))
+			return NULL;
+		rsp->allocated = true;
+	}
 
 	return rsp;
 }
