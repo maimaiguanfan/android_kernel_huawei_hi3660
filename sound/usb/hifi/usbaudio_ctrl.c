@@ -47,11 +47,11 @@
 #include "clock.h"
 #include "usbaudio_dsp_client.h"
 #include "usbaudio_ioctl.h"
-#include "huawei_platform/log/imonitor.h"
+#include <huawei_platform/log/imonitor.h>
 
 
 #ifdef CLT_AUDIO
-#include "usbaudio_test.h"
+#include "usbaudio.h"
 #endif
 
 #ifdef CONFIG_HUAWEI_DSM
