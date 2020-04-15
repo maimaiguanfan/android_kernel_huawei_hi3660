@@ -284,6 +284,7 @@ static ssize_t f_hidg_write(struct file *file, const char __user *buffer,
 			    size_t count, loff_t *offp)
 {
 	struct f_hidg *hidg  = file->private_data;
+	struct usb_request *req;
 	unsigned long flags;
 	ssize_t status = -ENOMEM;
 
@@ -293,7 +294,7 @@ static ssize_t f_hidg_write(struct file *file, const char __user *buffer,
 	spin_lock_irqsave(&hidg->write_spinlock, flags);
 
 #define WRITE_COND (!hidg->write_pending)
-
+try_again:
 	/* write queue */
 	while (!WRITE_COND) {
 		spin_unlock_irqrestore(&hidg->write_spinlock, flags);
@@ -308,6 +309,7 @@ static ssize_t f_hidg_write(struct file *file, const char __user *buffer,
 	}
 
 	hidg->write_pending = 1;
+	req = hidg->req;
 	count  = min_t(unsigned, count, hidg->report_length);
 
 	spin_unlock_irqrestore(&hidg->write_spinlock, flags);
@@ -320,11 +322,25 @@ static ssize_t f_hidg_write(struct file *file, const char __user *buffer,
 		goto release_write_pending;
 	}
 
-	hidg->req->status   = 0;
-	hidg->req->zero     = 0;
-	hidg->req->length   = count;
-	hidg->req->complete = f_hidg_req_complete;
-	hidg->req->context  = hidg;
+	spin_lock_irqsave(&hidg->write_spinlock, flags);
+
+	/* we our function has been disabled by host */
+	if (!hidg->req) {
+		free_ep_req(hidg->in_ep, hidg->req);
+		/*
+		 * TODO
+		 * Should we fail with error here?
+		 */
+		goto try_again;
+	}
+
+	req->status   = 0;
+	req->zero     = 0;
+	req->length   = count;
+	req->complete = f_hidg_req_complete;
+	req->context  = hidg;
+
+	spin_unlock_irqrestore(&hidg->write_spinlock, flags);
 
 	status = usb_ep_queue(hidg->in_ep, hidg->req, GFP_ATOMIC);
 	if (status < 0) {
@@ -345,6 +361,7 @@ release_write_pending:
 
 	return status;
 }
+
 
 static unsigned int f_hidg_poll(struct file *file, poll_table *wait)
 {
