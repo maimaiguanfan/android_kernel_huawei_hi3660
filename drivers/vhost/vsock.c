@@ -609,12 +609,18 @@ static int vhost_vsock_set_cid(struct vhost_vsock *vsock, u64 guest_cid)
 		return -EINVAL;
 
 	/* Refuse if CID is already in use */
-	other = vhost_vsock_get(guest_cid);
-	if (other && other != vsock)
-		return -EADDRINUSE;
-
 	spin_lock_bh(&vhost_vsock_lock);
+	other = vhost_vsock_get(guest_cid);
+	if (other && other != vsock) {
+		spin_unlock_bh(&vhost_vsock_lock);
+		return -EADDRINUSE;
+	}
+
+	if (vsock->guest_cid)
+		hash_del_rcu(&vsock->hash);
+
 	vsock->guest_cid = guest_cid;
+	hash_add_rcu(vhost_vsock_hash, &vsock->hash, vsock->guest_cid);
 	spin_unlock_bh(&vhost_vsock_lock);
 
 	return 0;
