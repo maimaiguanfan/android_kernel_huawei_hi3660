@@ -7240,17 +7240,9 @@ int tcp_conn_request(struct request_sock_ops *rsk_ops,
 		af_ops->send_synack(fastopen_sk, dst, &fl, req,
 				    &foc, TCP_SYNACK_FASTOPEN);
 		/* Add the child socket directly into the accept queue */
-#ifdef CONFIG_MPTCP
-		inet_csk_reqsk_queue_add(sk, req, meta_sk);
-#else
 		inet_csk_reqsk_queue_add(sk, req, fastopen_sk);
-#endif
 		sk->sk_data_ready(sk);
 		bh_unlock_sock(fastopen_sk);
-#ifdef CONFIG_MPTCP
-		if (meta_sk != fastopen_sk)
-			bh_unlock_sock(meta_sk);
-#endif
 		sock_put(fastopen_sk);
 	} else {
 		tcp_rsk(req)->tfo_listener = false;
