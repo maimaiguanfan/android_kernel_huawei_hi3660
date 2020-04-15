@@ -3372,15 +3372,26 @@ static void scsi_disk_release(struct device *dev)
 {
 	struct scsi_disk *sdkp = to_scsi_disk(dev);
 	struct gendisk *disk = sdkp->disk;
-
-	dev_info(dev, "%s ++\n", __func__);
-	disk->private_data = NULL;
-	put_disk(disk);
-	put_device(&sdkp->device->sdev_gendev);
+	struct request_queue *q = disk->queue;
 
 	spin_lock(&sd_index_lock);
 	ida_remove(&sd_index_ida, sdkp->index);
 	spin_unlock(&sd_index_lock);
+
+	/*
+	 * Wait until all requests that are in progress have completed.
+	 * This is necessary to avoid that e.g. scsi_end_request() crashes
+	 * due to clearing the disk->private_data pointer. Wait from inside
+	 * scsi_disk_release() instead of from sd_release() to avoid that
+	 * freezing and unfreezing the request queue affects user space I/O
+	 * in case multiple processes open a /dev/sd... node concurrently.
+	 */
+	blk_mq_freeze_queue(q);
+	blk_mq_unfreeze_queue(q);
+
+	disk->private_data = NULL;
+	put_disk(disk);
+	put_device(&sdkp->device->sdev_gendev);
 
 	kfree(sdkp);
 }
