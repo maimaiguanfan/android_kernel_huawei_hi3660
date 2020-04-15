@@ -2047,26 +2047,30 @@ static int __init is_i740(struct pci_dev *dev)
 	return 0;
 }
 
+/* Check if the chassis-type indicates there is no builtin LCD panel */
 static int __init intel_opregion_present(void)
 {
-	int opregion = 0;
-	struct pci_dev *dev = NULL;
-	u32 address;
+	const char *chassis_type;
+	unsigned long type;
 
-	for_each_pci_dev(dev) {
-		if ((dev->class >> 8) != PCI_CLASS_DISPLAY_VGA)
-			continue;
-		if (dev->vendor != PCI_VENDOR_ID_INTEL)
-			continue;
-		/* We don't want to poke around undefined i740 registers */
-		if (is_i740(dev))
-			continue;
-		pci_read_config_dword(dev, 0xfc, &address);
-		if (!address)
-			continue;
-		opregion = 1;
+	chassis_type = dmi_get_system_info(DMI_CHASSIS_TYPE);
+	if (!chassis_type)
+		return false;
+
+	if (kstrtoul(chassis_type, 10, &type) != 0)
+		return false;
+
+	switch (type) {
+	case 0x03: /* Desktop */
+	case 0x04: /* Low Profile Desktop */
+	case 0x05: /* Pizza Box */
+	case 0x06: /* Mini Tower */
+	case 0x07: /* Tower */
+	case 0x11: /* Main Server Chassis */
+		return true;
 	}
-	return opregion;
+
+	return false;
 }
 
 int acpi_video_register(void)
@@ -2080,6 +2084,20 @@ int acpi_video_register(void)
 		 * don't register the acpi_vide_bus again and return no error.
 		 */
 		goto leave;
+	}
+
+	/*
+	 * We're seeing a lot of bogus backlight interfaces on newer machines
+	 * without a LCD such as desktops, servers and HDMI sticks. Checking
+	 * the lcd flag fixes this, so enable this on any machines which are
+	 * win8 ready (where we also prefer the native backlight driver, so
+	 * normally the acpi_video code should not register there anyways).
+	 */
+	if (only_lcd == -1) {
+		if (dmi_is_desktop() && acpi_osi_is_win8())
+			only_lcd = true;
+		else
+			only_lcd = false;
 	}
 
 	dmi_check_system(video_dmi_table);
