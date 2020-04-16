@@ -5627,8 +5627,7 @@ re_enumerate:
 	 * udev->bos may update during reset,
 	 * make sure usb2_hw_lpm_enabled cleared
 	 */
-	if (udev->usb2_hw_lpm_enabled == 1)
-		usb_set_usb2_hardware_lpm(udev, 0);
+	usb_disable_usb2_hardware_lpm(udev);
 	usb_release_bos_descriptor(udev);
 	udev->bos = bos;
 re_enumerate_no_bos:
