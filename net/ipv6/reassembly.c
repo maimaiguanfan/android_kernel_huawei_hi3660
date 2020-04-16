@@ -525,6 +525,7 @@ static int ipv6_frag_rcv(struct sk_buff *skb)
 	struct frag_queue *fq;
 	const struct ipv6hdr *hdr = ipv6_hdr(skb);
 	struct net *net = dev_net(skb_dst(skb)->dev);
+	int iif;
 
 	if (IP6CB(skb)->flags & IP6SKB_FRAGMENTED)
 		goto fail_hdr;
@@ -553,17 +554,29 @@ static int ipv6_frag_rcv(struct sk_buff *skb)
 		return 1;
 	}
 
-	fq = fq_find(net, fhdr->identification, &hdr->saddr, &hdr->daddr,
-		     skb->dev ? skb->dev->ifindex : 0, ip6_frag_ecn(hdr));
+	if (skb->len - skb_network_offset(skb) < IPV6_MIN_MTU &&
+	    fhdr->frag_off & htons(IP6_MF))
+		goto fail_hdr;
+
+	iif = skb->dev ? skb->dev->ifindex : 0;
+	fq = fq_find(net, fhdr->identification, hdr, iif);
 	if (fq) {
+		u32 prob_offset = 0;
 		int ret;
 
 		spin_lock(&fq->q.lock);
 
-		ret = ip6_frag_queue(fq, skb, fhdr, IP6CB(skb)->nhoff);
+		fq->iif = iif;
+		ret = ip6_frag_queue(fq, skb, fhdr, IP6CB(skb)->nhoff,
+				     &prob_offset);
 
 		spin_unlock(&fq->q.lock);
-		inet_frag_put(&fq->q, &ip6_frags);
+		inet_frag_put(&fq->q);
+		if (prob_offset) {
+			__IP6_INC_STATS(net, ip6_dst_idev(skb_dst(skb)),
+					IPSTATS_MIB_INHDRERRORS);
+			icmpv6_param_prob(skb, ICMPV6_HDR_FIELD, prob_offset);
+		}
 		return ret;
 	}
 
@@ -584,7 +597,6 @@ static const struct inet6_protocol frag_protocol = {
 };
 
 #ifdef CONFIG_SYSCTL
-static int zero;
 
 static struct ctl_table ip6_frags_ns_ctl_table[] = {
 	{
