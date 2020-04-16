@@ -366,139 +366,67 @@ err:
  *	It is called with locked fq, and caller must check that
  *	queue is eligible for reassembly i.e. it is not COMPLETE,
  *	the last and the first frames arrived and all the bits are here.
- *
- *	returns true if *prev skb has been transformed into the reassembled
- *	skb, false otherwise.
  */
-static bool
-nf_ct_frag6_reasm(struct frag_queue *fq, struct sk_buff *prev,  struct net_device *dev)
+static int nf_ct_frag6_reasm(struct frag_queue *fq, struct sk_buff *skb,
+			     struct sk_buff *prev_tail, struct net_device *dev)
 {
-	struct sk_buff *fp, *head = fq->q.fragments;
-	int    payload_len;
+	void *reasm_data;
+	int payload_len;
 	u8 ecn;
 
 	inet_frag_kill(&fq->q, &nf_frags);
 
-	WARN_ON(head == NULL);
-	WARN_ON(NFCT_FRAG6_CB(head)->offset != 0);
-
 	ecn = ip_frag_ecn_table[fq->ecn];
 	if (unlikely(ecn == 0xff))
-		return false;
+		goto err;
+	
+	reasm_data = inet_frag_reasm_prepare(&fq->q, skb, prev_tail);
+	if (!reasm_data)
+		goto err;
 
-	/* Unfragmented part is taken from the first segment. */
-	payload_len = ((head->data - skb_network_header(head)) -
+	payload_len = ((skb->data - skb_network_header(skb)) -
 		       sizeof(struct ipv6hdr) + fq->q.len -
 		       sizeof(struct frag_hdr));
 	if (payload_len > IPV6_MAXPLEN) {
 		net_dbg_ratelimited("nf_ct_frag6_reasm: payload len = %d\n",
 				    payload_len);
-		return false;
-	}
-
-	/* Head of list must not be cloned. */
-	if (skb_unclone(head, GFP_ATOMIC))
-		return false;
-
-	/* If the first fragment is fragmented itself, we split
-	 * it to two chunks: the first with data and paged part
-	 * and the second, holding only fragments. */
-	if (skb_has_frag_list(head)) {
-		struct sk_buff *clone;
-		int i, plen = 0;
-
-		clone = alloc_skb(0, GFP_ATOMIC);
-		if (clone == NULL)
-			return false;
-
-		clone->next = head->next;
-		head->next = clone;
-		skb_shinfo(clone)->frag_list = skb_shinfo(head)->frag_list;
-		skb_frag_list_init(head);
-		for (i = 0; i < skb_shinfo(head)->nr_frags; i++)
-			plen += skb_frag_size(&skb_shinfo(head)->frags[i]);
-		clone->len = clone->data_len = head->data_len - plen;
-		head->data_len -= clone->len;
-		head->len -= clone->len;
-		clone->csum = 0;
-		clone->ip_summed = head->ip_summed;
-
-		add_frag_mem_limit(fq->q.net, clone->truesize);
-	}
-
-	/* morph head into last received skb: prev.
-	 *
-	 * This allows callers of ipv6 conntrack defrag to continue
-	 * to use the last skb(frag) passed into the reasm engine.
-	 * The last skb frag 'silently' turns into the full reassembled skb.
-	 *
-	 * Since prev is also part of q->fragments we have to clone it first.
-	 */
-	if (head != prev) {
-		struct sk_buff *iter;
-
-		fp = skb_clone(prev, GFP_ATOMIC);
-		if (!fp)
-			return false;
-
-		fp->next = prev->next;
-
-		iter = head;
-		while (iter) {
-			if (iter->next == prev) {
-				iter->next = fp;
-				break;
-			}
-			iter = iter->next;
-		}
-
-		skb_morph(prev, head);
-		prev->next = head->next;
-		consume_skb(head);
-		head = prev;
+		goto err;
 	}
 
 	/* We have to remove fragment header from datagram and to relocate
 	 * header in order to calculate ICV correctly. */
-	skb_network_header(head)[fq->nhoffset] = skb_transport_header(head)[0];
-	memmove(head->head + sizeof(struct frag_hdr), head->head,
-		(head->data - head->head) - sizeof(struct frag_hdr));
-	head->mac_header += sizeof(struct frag_hdr);
-	head->network_header += sizeof(struct frag_hdr);
+	skb_network_header(skb)[fq->nhoffset] = skb_transport_header(skb)[0];
+	memmove(skb->head + sizeof(struct frag_hdr), skb->head,
+		(skb->data - skb->head) - sizeof(struct frag_hdr));
+	skb->mac_header += sizeof(struct frag_hdr);
+	skb->network_header += sizeof(struct frag_hdr);
 
-	skb_shinfo(head)->frag_list = head->next;
-	skb_reset_transport_header(head);
-	skb_push(head, head->data - skb_network_header(head));
+	skb_reset_transport_header(skb);
 
-	for (fp = head->next; fp; fp = fp->next) {
-		head->data_len += fp->len;
-		head->len += fp->len;
-		if (head->ip_summed != fp->ip_summed)
-			head->ip_summed = CHECKSUM_NONE;
-		else if (head->ip_summed == CHECKSUM_COMPLETE)
-			head->csum = csum_add(head->csum, fp->csum);
-		head->truesize += fp->truesize;
-	}
-	sub_frag_mem_limit(fq->q.net, head->truesize);
-
-	head->ignore_df = 1;
-	head->next = NULL;
-	head->dev = dev;
-	head->tstamp = fq->q.stamp;
-	ipv6_hdr(head)->payload_len = htons(payload_len);
-	ipv6_change_dsfield(ipv6_hdr(head), 0xff, ecn);
-	IP6CB(head)->frag_max_size = sizeof(struct ipv6hdr) + fq->q.max_size;
+	inet_frag_reasm_finish(&fq->q, skb, reasm_data);
+ 
+	skb->ignore_df = 1;
+	skb->dev = dev;
+	ipv6_hdr(skb)->payload_len = htons(payload_len);
+	ipv6_change_dsfield(ipv6_hdr(skb), 0xff, ecn);
+	IP6CB(skb)->frag_max_size = sizeof(struct ipv6hdr) + fq->q.max_size;
 
 	/* Yes, and fold redundant checksum back. 8) */
-	if (head->ip_summed == CHECKSUM_COMPLETE)
-		head->csum = csum_partial(skb_network_header(head),
-					  skb_network_header_len(head),
-					  head->csum);
+	if (skb->ip_summed == CHECKSUM_COMPLETE)
+		skb->csum = csum_partial(skb_network_header(skb),
+					 skb_network_header_len(skb),
+					 skb->csum);
 
 	fq->q.fragments = NULL;
+	fq->q.rb_fragments = RB_ROOT;
 	fq->q.fragments_tail = NULL;
+	fq->q.last_run_head = NULL;
 
-	return true;
+	return 0;
+
+err:
+	inet_frag_kill(&fq->q &nf_frags);
+	return -EINVAL;
 }
 
 /*
@@ -601,24 +529,17 @@ int nf_ct_frag6_gather(struct net *net, struct sk_buff *skb, u32 user)
 	spin_lock_bh(&fq->q.lock);
 
 	ret = nf_ct_frag6_queue(fq, skb, fhdr, nhoff);
-	if (ret < 0) {
-		if (ret == -EPROTO) {
-			skb->transport_header = savethdr;
-			ret = 0;
-		}
-		goto out_unlock;
+	if (ret == -EPROTO) {
+		skb->transport_header = savethdr;
+		ret = 0;
 	}
 
 	/* after queue has assumed skb ownership, only 0 or -EINPROGRESS
 	 * must be returned.
 	 */
-	ret = -EINPROGRESS;
-	if (fq->q.flags == (INET_FRAG_FIRST_IN | INET_FRAG_LAST_IN) &&
-	    fq->q.meat == fq->q.len &&
-	    nf_ct_frag6_reasm(fq, skb, dev))
-		ret = 0;
+	if (ret)
+		ret = -EINPROGRESS;
 
-out_unlock:
 	spin_unlock_bh(&fq->q.lock);
 	inet_frag_put(&fq->q, &nf_frags);
 	return ret;
