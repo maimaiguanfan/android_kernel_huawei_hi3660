@@ -24,62 +24,6 @@
 #include <net/sock.h>
 #include <net/inet_frag.h>
 #include <net/inet_ecn.h>
-#include <net/ip.h>
-#include <net/ipv6.h>
-
-/* Use skb->cb to track consecutive/adjacent fragments coming at
- * the end of the queue. Nodes in the rb-tree queue will
- * contain "runs" of one or more adjacent fragments.
- *
- * Invariants:
- * - next_frag is NULL at the tail of a "run";
- * - the head of a "run" has the sum of all fragment lengths in frag_run_len.
- */
-struct ipfrag_skb_cb {
-	union {
-		struct inet_skb_parm	h4;
-		struct inet6_skb_parm	h6;
-	};
-	struct sk_buff		*next_frag;
-	int			frag_run_len;
-};
-
-#define FRAG_CB(skb)		((struct ipfrag_skb_cb *)((skb)->cb))
-
-static void fragcb_clear(struct sk_buff *skb)
-{
-	RB_CLEAR_NODE(&skb->rbnode);
-	FRAG_CB(skb)->next_frag = NULL;
-	FRAG_CB(skb)->frag_run_len = skb->len;
-}
-
-/* Append skb to the last "run". */
-static void fragrun_append_to_last(struct inet_frag_queue *q,
-				   struct sk_buff *skb)
-{
-	fragcb_clear(skb);
-
-	FRAG_CB(q->last_run_head)->frag_run_len += skb->len;
-	FRAG_CB(q->fragments_tail)->next_frag = skb;
-	q->fragments_tail = skb;
-}
-
-/* Create a new "run" with the skb. */
-static void fragrun_create(struct inet_frag_queue *q, struct sk_buff *skb)
-{
-	BUILD_BUG_ON(sizeof(struct ipfrag_skb_cb) > sizeof(skb->cb));
-	fragcb_clear(skb);
-
-	if (q->last_run_head)
-		rb_link_node(&skb->rbnode, &q->last_run_head->rbnode,
-			     &q->last_run_head->rbnode.rb_right);
-	else
-		rb_link_node(&skb->rbnode, NULL, &q->rb_fragments.rb_node);
-	rb_insert_color(&skb->rbnode, &q->rb_fragments);
-
-	q->fragments_tail = skb;
-	q->last_run_head = skb;
-}
 
 #define INETFRAGS_EVICT_BUCKETS   128
 #define INETFRAGS_EVICT_MAX	  512
@@ -370,28 +314,6 @@ void inet_frag_destroy(struct inet_frag_queue *q, struct inet_frags *f)
 	sub_frag_mem_limit(nf, sum);
 }
 EXPORT_SYMBOL(inet_frag_destroy);
-
-unsigned int inet_frag_rbtree_purge(struct rb_root *root)
-{
-	struct rb_node *p = rb_first(root);
-	unsigned int sum = 0;
-
-	while (p) {
-		struct sk_buff *skb = rb_entry(p, struct sk_buff, rbnode);
-
-		p = rb_next(p);
-		rb_erase(&skb->rbnode, root);
-		while (skb) {
-			struct sk_buff *next = FRAG_CB(skb)->next_frag;
-
-			sum += skb->truesize;
-			kfree_skb(skb);
-			skb = next;
-		}
-	}
-	return sum;
-}
-EXPORT_SYMBOL(inet_frag_rbtree_purge);
 
 static struct inet_frag_queue *inet_frag_intern(struct netns_frags *nf,
 						struct inet_frag_queue *qp_in,
