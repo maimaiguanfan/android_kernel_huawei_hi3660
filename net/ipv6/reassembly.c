@@ -115,61 +115,6 @@ bool ip6_frag_match(const struct inet_frag_queue *q, const void *a)
 }
 EXPORT_SYMBOL(ip6_frag_match);
 
-void ip6_frag_init(struct inet_frag_queue *q, const void *a)
-{
-	struct frag_queue *fq = container_of(q, struct frag_queue, q);
-	const struct ip6_create_arg *arg = a;
-
-	fq->id = arg->id;
-	fq->user = arg->user;
-	fq->saddr = *arg->src;
-	fq->daddr = *arg->dst;
-	fq->ecn = arg->ecn;
-}
-EXPORT_SYMBOL(ip6_frag_init);
-
-void ip6_expire_frag_queue(struct net *net, struct frag_queue *fq,
-			   struct inet_frags *frags)
-{
-	struct net_device *dev = NULL;
-
-	spin_lock(&fq->q.lock);
-
-	if (fq->q.flags & INET_FRAG_COMPLETE)
-		goto out;
-
-	inet_frag_kill(&fq->q, frags);
-
-	rcu_read_lock();
-	dev = dev_get_by_index_rcu(net, fq->iif);
-	if (!dev)
-		goto out_rcu_unlock;
-
-	__IP6_INC_STATS(net, __in6_dev_get(dev), IPSTATS_MIB_REASMFAILS);
-
-	if (inet_frag_evicting(&fq->q))
-		goto out_rcu_unlock;
-
-	__IP6_INC_STATS(net, __in6_dev_get(dev), IPSTATS_MIB_REASMTIMEOUT);
-
-	/* Don't send error if the first segment did not arrive. */
-	if (!(fq->q.flags & INET_FRAG_FIRST_IN) || !fq->q.fragments)
-		goto out_rcu_unlock;
-
-	/* But use as source device on which LAST ARRIVED
-	 * segment was received. And do not use fq->dev
-	 * pointer directly, device might already disappeared.
-	 */
-	fq->q.fragments->dev = dev;
-	icmpv6_send(fq->q.fragments, ICMPV6_TIME_EXCEED, ICMPV6_EXC_FRAGTIME, 0);
-out_rcu_unlock:
-	rcu_read_unlock();
-out:
-	spin_unlock(&fq->q.lock);
-	inet_frag_put(&fq->q, frags);
-}
-EXPORT_SYMBOL(ip6_expire_frag_queue);
-
 static void ip6_frag_expire(unsigned long data)
 {
 	struct frag_queue *fq;
@@ -735,12 +680,20 @@ static struct pernet_operations ip6_frags_ops = {
 	.exit = ipv6_frags_exit_net,
 };
 
+static const struct rhashtable_params ip6_rhash_params = {
+	.head_offset		= offsetof(struct inet_frag_queue, node),
+	.hashfn			= ip6frag_key_hashfn,
+	.obj_hashfn		= ip6frag_obj_hashfn,
+	.obj_cmpfn		= ip6frag_obj_cmpfn,
+	.automatic_shrinking	= true,
+};
+
 int __init ipv6_frag_init(void)
 {
 	int ret;
 
 	ip6_frags.hashfn = ip6_hashfn;
-	ip6_frags.constructor = ip6_frag_init;
+	ip6_frags.constructor = ip6frag_init;
 	ip6_frags.destructor = NULL;
 	ip6_frags.qsize = sizeof(struct frag_queue);
 	ip6_frags.match = ip6_frag_match;
