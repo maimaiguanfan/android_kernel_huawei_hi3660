@@ -2142,68 +2142,77 @@ static void dw_mci_tasklet_func(unsigned long priv)
 	struct dw_mci *host = (struct dw_mci *)priv;
 	struct mmc_data	*data;
 	struct mmc_command *cmd;
+	struct mmc_request *mrq;
 	enum dw_mci_state state;
 	enum dw_mci_state prev_state;
-	u32 status;
-	int ret = 0;
+	unsigned int err;
 
 	spin_lock(&host->lock);
 
 	state = host->state;
 	data = host->data;
-
-	if (host->cmd_status & SDMMC_INT_HLE) {
-		clear_bit(EVENT_CMD_COMPLETE, &host->pending_events);
-		dev_err(host->dev, "hardware locked write error\n");
-		dw_mci_reg_dump(host);
-		host->cmd_status &= ~SDMMC_INT_HLE;
-		goto unlock;
-	}
+	mrq = host->mrq;
 
 	do {
 		prev_state = state;
 
 		switch (state) {
 		case STATE_IDLE:
+		case STATE_WAITING_CMD11_DONE:
 			break;
 
+		case STATE_SENDING_CMD11:
 		case STATE_SENDING_CMD:
-			if (NULL == host->cmd) {
-				printk(KERN_ERR"%s: The command currently being send to the card is NULL!\n",
-						__func__);
-				break;
-			}
 			if (!test_and_clear_bit(EVENT_CMD_COMPLETE,
 						&host->pending_events))
 				break;
+
 			cmd = host->cmd;
 			host->cmd = NULL;
 			set_bit(EVENT_CMD_COMPLETE, &host->completed_events);
-			dw_mci_command_complete(host, cmd);
-			if (cmd == host->mrq->sbc && !cmd->error) {
+			err = dw_mci_command_complete(host, cmd);
+			if (cmd == mrq->sbc && !err) {
 				prev_state = state = STATE_SENDING_CMD;
 				__dw_mci_start_request(host, host->cur_slot,
-						       host->mrq->cmd);
+						       mrq->cmd);
 				goto unlock;
 			}
 
-			if (data && cmd->error &&
-					cmd != data->stop) {
-				if (host->mrq->data->stop)
-					send_stop_cmd(host, host->mrq->data);
-				else {
-					dw_mci_start_command(host, &host->stop,
-							host->stop_cmdr);
-					host->stop_snd = true;
+			if (cmd->data && err) {
+				/*
+				 * During UHS tuning sequence, sending the stop
+				 * command after the response CRC error would
+				 * throw the system into a confused state
+				 * causing all future tuning phases to report
+				 * failure.
+				 *
+				 * In such case controller will move into a data
+				 * transfer state after a response error or
+				 * response CRC error. Let's let that finish
+				 * before trying to send a stop, so we'll go to
+				 * STATE_SENDING_DATA.
+				 *
+				 * Although letting the data transfer take place
+				 * will waste a bit of time (we already know
+				 * the command was bad), it can't cause any
+				 * errors since it's possible it would have
+				 * taken place anyway if this tasklet got
+				 * delayed. Allowing the transfer to take place
+				 * avoids races and keeps things simple.
+				 */
+				if (err != -ETIMEDOUT) {
+					state = STATE_SENDING_DATA;
+					continue;
 				}
-				/* To avoid fifo full condition */
-				dw_mci_fifo_reset(host->dev, host);
+
+				dw_mci_stop_dma(host);
+				send_stop_abort(host, data);
 				state = STATE_SENDING_STOP;
 				break;
 			}
 
-			if (!host->mrq->data || cmd->error) {
-				dw_mci_request_end(host, host->mrq);
+			if (!cmd->data || err) {
+				dw_mci_request_end(host, mrq);
 				goto unlock;
 			}
 
@@ -2211,12 +2220,63 @@ static void dw_mci_tasklet_func(unsigned long priv)
 			/* fall through */
 
 		case STATE_SENDING_DATA:
-			ret = pro_state_send_data(host, data, state);
-			if (1 == ret)
+			/*
+			 * We could get a data error and never a transfer
+			 * complete so we'd better check for it here.
+			 *
+			 * Note that we don't really care if we also got a
+			 * transfer complete; stopping the DMA and sending an
+			 * abort won't hurt.
+			 */
+			if (test_and_clear_bit(EVENT_DATA_ERROR,
+					       &host->pending_events)) {
+				dw_mci_stop_dma(host);
+				if (data->stop ||
+				    !(host->data_status & (SDMMC_INT_DRTO |
+							   SDMMC_INT_EBE)))
+					send_stop_abort(host, data);
+				state = STATE_DATA_ERROR;
 				break;
+			}
+
+			if (!test_and_clear_bit(EVENT_XFER_COMPLETE,
+						&host->pending_events)) {
+				/*
+				 * If all data-related interrupts don't come
+				 * within the given time in reading data state.
+				 */
+				if (host->dir_status == DW_MCI_RECV_STATUS)
+					dw_mci_set_drto(host);
+				break;
+			}
 
 			set_bit(EVENT_XFER_COMPLETE, &host->completed_events);
+
+			/*
+			 * Handle an EVENT_DATA_ERROR that might have shown up
+			 * before the transfer completed.  This might not have
+			 * been caught by the check above because the interrupt
+			 * could have gone off between the previous check and
+			 * the check for transfer complete.
+			 *
+			 * Technically this ought not be needed assuming we
+			 * get a DATA_COMPLETE eventually (we'll notice the
+			 * error and end the request), but it shouldn't hurt.
+			 *
+			 * This has the advantage of sending the stop command.
+			 */
+			if (test_and_clear_bit(EVENT_DATA_ERROR,
+					       &host->pending_events)) {
+				dw_mci_stop_dma(host);
+				if (data->stop ||
+				    !(host->data_status & (SDMMC_INT_DRTO |
+							   SDMMC_INT_EBE)))
+					send_stop_abort(host, data);
+				state = STATE_DATA_ERROR;
+				break;
+			}
 			prev_state = state = STATE_DATA_BUSY;
+
 			/* fall through */
 
 		case STATE_DATA_BUSY:
@@ -2227,128 +2287,76 @@ static void dw_mci_tasklet_func(unsigned long priv)
 				 * interrupt doesn't come within the given time.
 				 * in reading data state.
 				 */
-				if ((host->quirks & DW_MCI_QUIRK_BROKEN_DTO) &&
-				    (host->dir_status == DW_MCI_RECV_STATUS))
+				if (host->dir_status == DW_MCI_RECV_STATUS)
 					dw_mci_set_drto(host);
 				break;
 			}
 
-			set_bit(EVENT_DATA_COMPLETE, &host->completed_events);
-			status = host->data_status;
-
-			if (!data) {
-				pr_err("%s data ponit is NULL\n",__func__);
-				break;
-			}
-
-			status |= test_sd_data;
-			if (status & DW_MCI_DATA_ERROR_FLAGS) {
-				if (status & SDMMC_INT_DRTO) {
-					dev_err(host->dev,
-						"data timeout error\n");
-					data->error = -ETIMEDOUT;
-				} else if (status & SDMMC_INT_DCRC) {
-					if (!(host->flags & DWMMC_IN_TUNING)) {
-						dev_err(host->dev,
-							"data CRC error\n");
-						dw_mci_reg_dump(host);
-
-#ifdef CONFIG_SD_TIMEOUT_RESET
-						dw_mci_set_peri_08v(host);
-#endif
-
-					}
-					data->error = -EILSEQ;
-				} else if (status & SDMMC_INT_EBE) {
-					if (host->dir_status ==
-							DW_MCI_SEND_STATUS) {
-						/*
-						 * No data CRC status was returned.
-						 * The number of bytes transferred will
-						 * be exaggerated in PIO mode.
-						 */
-						data->bytes_xfered = 0;
-						data->error = -ETIMEDOUT;
-						dev_err(host->dev,
-							"Write no CRC\n");
-					} else {
-						data->error = -EIO;
-						dev_err(host->dev,
-							"End bit error\n");
-					}
-
-				} else if (status & SDMMC_INT_SBE) {
-					dev_err(host->dev,
-						"Start bit error "
-						"(status=%08x)\n",
-						status);
-					data->error = -EIO;
-				} else {
-					dev_err(host->dev,
-						"data FIFO error "
-						"(status=%08x)\n",
-						status);
-					data->error = -EIO;
-				}
-				/*
-				 * After an error, there may be data lingering
-				 * in the FIFO, so reset it - doing so
-				 * generates a block interrupt, hence setting
-				 * the scatter-gather pointer to NULL.
-				 */
-				sg_miter_stop(&host->sg_miter);
-				host->sg = NULL;
-				dw_mci_fifo_reset(host->dev, host);
-			} else {
-				data->bytes_xfered = data->blocks * data->blksz;
-				data->error = 0;
-			}
-
 			host->data = NULL;
+			set_bit(EVENT_DATA_COMPLETE, &host->completed_events);
+			err = dw_mci_data_complete(host, data);
 
-			if (!data->stop && !host->stop_snd) {
-				dw_mci_request_end(host, host->mrq);
-				goto unlock;
-			}
+			if (!err) {
+				if (!data->stop || mrq->sbc) {
+					if (mrq->sbc && data->stop)
+						data->stop->error = 0;
+					dw_mci_request_end(host, mrq);
+					goto unlock;
+				}
 
-			if (host->mrq->sbc && !data->error) {
+				/* stop command for open-ended transfer*/
 				if (data->stop)
-					data->stop->error = 0;
-				dw_mci_request_end(host, host->mrq);
-				goto unlock;
-			}
-
-			prev_state = state = STATE_SENDING_STOP;
-			if (!data->error)
-				send_stop_cmd(host, data);
-
-			if (test_and_clear_bit(EVENT_DATA_ERROR,
-						&host->pending_events)) {
-				if (data->stop)
-					send_stop_cmd(host, data);
-				else {
-					dw_mci_start_command(host,
-							&host->stop,
-							host->stop_cmdr);
-					host->stop_snd = true;
+					send_stop_abort(host, data);
+			} else {
+				/*
+				 * If we don't have a command complete now we'll
+				 * never get one since we just reset everything;
+				 * better end the request.
+				 *
+				 * If we do have a command complete we'll fall
+				 * through to the SENDING_STOP command and
+				 * everything will be peachy keen.
+				 */
+				if (!test_bit(EVENT_CMD_COMPLETE,
+					      &host->pending_events)) {
+					host->cmd = NULL;
+					dw_mci_request_end(host, mrq);
+					goto unlock;
 				}
 			}
+
+			/*
+			 * If err has non-zero,
+			 * stop-abort command has been already issued.
+			 */
+			prev_state = state = STATE_SENDING_STOP;
+
 			/* fall through */
 
 		case STATE_SENDING_STOP:
-			ret = pro_state_send_stop(host);
-			if (1 == ret)
+			if (!test_and_clear_bit(EVENT_CMD_COMPLETE,
+						&host->pending_events))
 				break;
 
+			/* CMD error in data command */
+			if (mrq->cmd->error && mrq->data)
+				dw_mci_reset(host);
+
+			host->cmd = NULL;
+			host->data = NULL;
+
+			if (mrq->stop)
+				dw_mci_command_complete(host, mrq->stop);
+			else
+				host->cmd_status = 0;
+
+			dw_mci_request_end(host, mrq);
 			goto unlock;
 
 		case STATE_DATA_ERROR:
 			if (!test_and_clear_bit(EVENT_XFER_COMPLETE,
 						&host->pending_events))
 				break;
-
-			dw_mci_stop_dma(host);
-			set_bit(EVENT_XFER_COMPLETE, &host->completed_events);
 
 			state = STATE_DATA_BUSY;
 			break;
@@ -2359,8 +2367,8 @@ static void dw_mci_tasklet_func(unsigned long priv)
 unlock:
 	spin_unlock(&host->lock);
 
-	test_sd_data = 0;
 }
+
 /*lint -restore*/
 /* push final bytes to part_buf, only use during push */
 static void dw_mci_set_part_bytes(struct dw_mci *host, const void *buf, int cnt)
