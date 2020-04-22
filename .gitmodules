@@ -1,0 +1,3 @@
+[submodule "tools/AnyKernel3"]
+	path = tools/AnyKernel3
+	url = git@gitee.com:maimaiguanfan/AnyKernel3.git
