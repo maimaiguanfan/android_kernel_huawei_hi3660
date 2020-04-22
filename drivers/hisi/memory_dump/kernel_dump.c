@@ -25,14 +25,14 @@
 #include <linux/percpu.h>
 #include <linux/printk.h>
 #include <asm/memory.h>
-#include <kernel_dump.h>
+#include "kernel_dump.h"
 #include <linux/hisi/mntn_dump.h>
 #include <linux/module.h>
 #include <linux/slab.h>
 #include <linux/rculist.h>
 #include <linux/kernel.h>
 #include <linux/version.h>
-#include "securec.h"
+#include <securec.h>
 #include <linux/hisi/hisi_log.h>
 #define HISI_LOG_TAG MEMORY_DUMP_TAG
 

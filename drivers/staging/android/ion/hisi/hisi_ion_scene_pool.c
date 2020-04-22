@@ -37,7 +37,7 @@
 #endif
 #include <linux/version.h>
 
-#include "ion.h"
+#include "../ion.h"
 #include "hisi_ion_scene_pool.h"
 
 /* The ALLOC_WMARK bits are used as an index to zone->watermark */

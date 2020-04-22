@@ -10,9 +10,9 @@
  * Copyright (c) 2001-2021, Huawei Tech. Co., Ltd. All rights reserved.
  */
 
-#include "./include/hw_rscan_scanner.h"
-#include "./include/hw_rscan_utils.h"
-#include "./include/hw_rscan_whitelist.h"
+#include "include/hw_rscan_scanner.h"
+#include "include/hw_rscan_utils.h"
+#include "include/hw_rscan_whitelist.h"
 #include <chipset_common/security/hw_kernel_stp_interface.h>
 
 #define VAR_NOT_USED(variable)  do{(void)(variable);}while(0);

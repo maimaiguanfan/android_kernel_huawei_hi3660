@@ -11,7 +11,7 @@
 ***************************************************************************/
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <hisi_coul_drv_test.h>
+#include "hisi_coul_drv_test.h"
 #include <linux/platform_device.h>
 #include <linux/device.h>
 #include <linux/of.h>

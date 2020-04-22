@@ -29,7 +29,7 @@
 #if defined (CONFIG_HUAWEI_DSM)
 #include <dsm/dsm_pub.h>
 #endif
-#include <../../huawei_touchscreen_chips.h>
+#include "../../huawei_touchscreen_chips.h"
 #include "raw_data.h"
 #define WATCHDOG_TIMEOUT_S 2
 #define FORCE_TIMEOUT_100MS 10

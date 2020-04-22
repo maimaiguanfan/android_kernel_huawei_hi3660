@@ -6,7 +6,7 @@
 #include <asm/uaccess.h>
 
 //#include "huawei_touchscreen_chips.h"
-#include <huawei_ts_kit.h>
+#include "huawei_ts_kit.h"
 
 #define SUPPORT_UNIQUE_TEST 1
 #define STRTOL_LEN 10

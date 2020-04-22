@@ -19,7 +19,7 @@
 #include <linux/regmap.h>
 #include <linux/semaphore.h>
 #include "lm36274.h"
-#include "hisi_fb.h"
+#include "../hisi_fb.h"
 #include <linux/hisi/hw_cmdline_parse.h> //for runmode_is_factory
 #include <dsm/dsm_pub.h>
 extern struct dsm_client *lcd_dclient;

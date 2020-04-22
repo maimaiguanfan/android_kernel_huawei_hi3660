@@ -23,7 +23,7 @@
 #include <linux/kern_levels.h>
 #include <huawei_platform/log/hw_log.h>
 #include "soc_rtctimerwdtv100_interface.h"
-#include <hisi_charging_watchdog.h>
+#include "hisi_charging_watchdog.h"
 #include "securec.h"
 #ifdef CONFIG_HISI_BB
 #include <linux/hisi/rdr_pub.h>

@@ -76,7 +76,7 @@ DEFINE_EVENT(hisp_rpmsg_internel, hisp_rpmsg_recv,
 
 /* This part must be outside protection */
 #undef TRACE_INCLUDE_PATH
-#define TRACE_INCLUDE_PATH .
+#define TRACE_INCLUDE_PATH ../../../../../drivers/media/huawei/camera/hisp
 #define TRACE_INCLUDE_FILE trace_hisp
 #include <trace/define_trace.h>
 

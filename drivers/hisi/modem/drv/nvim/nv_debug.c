@@ -51,22 +51,22 @@
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
 #include <linux/rtc.h>
-#include <product_config.h>
+#include "../../config/product/hi3660/config/product_config.h"
 #include <bsp_dump.h>
 #include <bsp_slice.h>
 #include <bsp_nvim.h>
 #include "../../adrv/adrv.h"
 #include <bsp_rfile.h>
-#include <NVIM_ResumeId.h>
-#include <nv_partition_img.h>
+#include "NVIM_ResumeId.h"
+#include "nv_partition_img.h"
 #include "nv_comm.h"
 #include "nv_ctrl.h"
 #include "nv_debug.h"
 #include "nv_index.h"
 #include "nv_crc.h"
-#include "drv_nv_id.h"
-#include "drv_nv_def.h"
-#include "mdrv_rfile.h"
+#include "../../include/nv/tl/drv/drv_nv_id.h"
+#include "../../include/nv/tl/drv/drv_nv_def.h"
+#include "../../include/drv/acore/mdrv_rfile.h"
 
 NV_DEBUG_CFG_STRU              g_nv_debug_cfg;
 extern struct nv_global_ctrl_info_stru  g_nv_ctrl;

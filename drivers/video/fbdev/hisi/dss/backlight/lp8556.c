@@ -19,7 +19,7 @@
 #include <linux/regmap.h>
 #include <linux/semaphore.h>
 #include "lp8556.h"
-#include "hisi_fb.h"
+#include "../hisi_fb.h"
 #include "../hisi_fb_panel.h"
 
 static struct lp8556_backlight_information lp8556_bl_info;

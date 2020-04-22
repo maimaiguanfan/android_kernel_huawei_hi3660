@@ -1,6 +1,6 @@
 
 
-#include "u_ether.h"
+#include "../u_ether.h"
 
 extern struct device *create_function_device(char *name);
 

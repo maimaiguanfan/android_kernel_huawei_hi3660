@@ -15,9 +15,9 @@
 #include <linux/moduleparam.h>
 #include <linux/slab.h>
 #include <linux/types.h>
-#include "./include/hw_rscan_utils.h"
-#include "./include/hw_rscan_scanner.h"
-#include "./include/hw_rscan_proc.h"
+#include "include/hw_rscan_utils.h"
+#include "include/hw_rscan_scanner.h"
+#include "include/hw_rscan_proc.h"
 #include <chipset_common/security/hw_kernel_stp_interface.h>
 #include <linux/workqueue.h>
 

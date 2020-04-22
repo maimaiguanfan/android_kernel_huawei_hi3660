@@ -29,7 +29,7 @@
 #include <asm/uaccess.h>
 #include <linux/vmalloc.h>
 #include "synaptics.h"
-#include <../../huawei_touchscreen_chips.h>
+#include "../../huawei_touchscreen_chips.h"
 
 #define FORCE_UPDATE false
 /*#define DO_LOCKDOWN false*/

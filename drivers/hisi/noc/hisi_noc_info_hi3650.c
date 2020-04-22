@@ -14,7 +14,7 @@
 #include <linux/io.h>
 #include <linux/string.h>
 
-#include <hisi_noc_info.h>
+#include "hisi_noc_info.h"
 #include <linux/hisi/hisi_log.h>
 #define HISI_LOG_TAG HISI_NOC_TAG
 

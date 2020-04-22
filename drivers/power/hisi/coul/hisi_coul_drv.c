@@ -12,7 +12,7 @@
 #include <linux/module.h>
 #include <linux/power_supply.h>
 #include <linux/power/hisi/coul/hisi_coul_drv.h>
-#include <hisi_coul_drv_test.h>
+#include "hisi_coul_drv_test.h"
 
 #ifdef CONFIG_HUAWEI_HW_DEV_DCT
 #include <huawei_platform/devdetect/hw_dev_dec.h>

@@ -22,8 +22,8 @@
 
 #include <linux/types.h>
 #include "csmi.h"
-#include "slimbus_types.h"
-#include "slimbus_debug.h"
+#include "../../slimbus_types.h"
+#include "../../slimbus_debug.h"
 
 /* address of soc generic device */
 #define SOC_EA_GENERIC_DEVICE						0xaaaac1000200

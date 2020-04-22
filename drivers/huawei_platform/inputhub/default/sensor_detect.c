@@ -22,9 +22,9 @@
 #include "contexthub_route.h"
 #include "contexthub_boot.h"
 #include "protocol.h"
-#include <sensor_sysfs.h>
-#include <sensor_config.h>
-#include <sensor_detect.h>
+#include "sensor_sysfs.h"
+#include "sensor_config.h"
+#include "sensor_detect.h"
 #include "contexthub_debug.h"
 #include <linux/mtd/hisi_nve_interface.h>
 #include <linux/switch.h>

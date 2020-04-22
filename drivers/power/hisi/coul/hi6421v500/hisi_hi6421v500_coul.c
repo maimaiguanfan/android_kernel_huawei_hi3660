@@ -1,7 +1,7 @@
 
 
 #include "hisi_hi6421v500_coul.h"
-#include <../hisi_coul_core.h>
+#include "../hisi_coul_core.h"
 
 
 extern struct atomic_notifier_head coul_fault_notifier_list;

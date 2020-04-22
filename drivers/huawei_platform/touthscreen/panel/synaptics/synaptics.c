@@ -7,7 +7,7 @@
 #include <linux/interrupt.h>
 #include <linux/completion.h>
 #include "synaptics.h"
-#include <../../huawei_touchscreen_chips.h>
+#include "../../huawei_touchscreen_chips.h"
 #include <linux/regulator/consumer.h>
 #include <huawei_platform/log/log_jank.h>
 #include "../../huawei_touchscreen_algo.h"

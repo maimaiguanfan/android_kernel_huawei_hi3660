@@ -19,7 +19,7 @@
 #include <linux/regmap.h>
 #include <linux/semaphore.h>
 #include "lm36923.h"
-#include "hisi_fb.h"
+#include "../hisi_fb.h"
 #include <dsm/dsm_pub.h>
 extern struct dsm_client *lcd_dclient;
 

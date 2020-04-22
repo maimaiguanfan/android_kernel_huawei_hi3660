@@ -27,7 +27,7 @@
 #include <linux/uaccess.h>
 #include <linux/cdev.h>
 #include "synaptics.h"
-#include <../../huawei_touchscreen_chips.h>
+#include "../../huawei_touchscreen_chips.h"
 
 #define CHAR_DEVICE_NAME "rmi"
 #define DEVICE_CLASS_NAME "rmidev"

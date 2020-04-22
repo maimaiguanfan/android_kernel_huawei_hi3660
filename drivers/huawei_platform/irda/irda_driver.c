@@ -13,7 +13,7 @@
 #include <linux/regulator/consumer.h>
 #include <linux/pinctrl/consumer.h>
 #include <linux/mutex.h>
-#include <irda_driver.h>
+#include "irda_driver.h"
 
 #define HWLOG_TAG irda
 HWLOG_REGIST();

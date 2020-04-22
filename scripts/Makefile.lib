@@ -301,7 +301,11 @@ cmd_dt_S_dtb=						\
 $(obj)/%.dtb.S: $(obj)/%.dtb
 	$(call cmd,dt_S_dtb)
 
+ifeq ($(KBUILD_SRC),)
+DTCTOOL = tools/dtc
+else
 DTCTOOL = $(KBUILD_SRC)/tools/dtc
+endif
 quiet_cmd_dtc = DTC     $@
 cmd_dtc = mkdir -p $(dir ${dtc-tmp}) ; \
 	$(CPP) $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) $< ; \

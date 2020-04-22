@@ -4,7 +4,7 @@
 #include <linux/slab.h>
 #include <linux/module.h>
 #include <linux/string.h>
-#include <dsm_audio.h>
+#include "dsm_audio.h"
 
 static struct dsm_dev dsm_audio = {
 	.name = DSM_AUDIO_NAME,

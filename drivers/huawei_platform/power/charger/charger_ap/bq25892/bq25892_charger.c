@@ -42,7 +42,7 @@
 #ifdef CONFIG_HISI_BCI_BATTERY
 #include <linux/power/hisi/hisi_bci_battery.h>
 #endif
-#include <bq25892_charger.h>
+#include "bq25892_charger.h"
 #include <linux/hisi/hisi_adc.h>
 
 #define HWLOG_TAG bq25892_charger

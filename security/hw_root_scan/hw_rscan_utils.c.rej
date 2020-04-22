@@ -1,0 +1,10 @@
+diff a/security/hw_root_scan/hw_rscan_utils.c b/security/hw_root_scan/hw_rscan_utils.c	(rejected hunks)
+@@ -6,7 +6,7 @@
+  * Create: 2016-06-18
+  */
+ 
+-#include "./include/hw_rscan_utils.h"
++#include "include/hw_rscan_utils.h"
+ 
+ int get_ro_secure(void)
+ {

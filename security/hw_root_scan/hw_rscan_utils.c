@@ -9,7 +9,7 @@
  * Copyright (c) 2001-2021, Huawei Tech. Co., Ltd. All rights reserved.
  */
 
-#include "./include/hw_rscan_utils.h"
+#include "include/hw_rscan_utils.h"
 
 int get_ro_secure(void)
 {
