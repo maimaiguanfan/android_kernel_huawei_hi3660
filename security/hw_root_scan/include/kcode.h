@@ -19,7 +19,7 @@
 #include <linux/version.h>
 #include <crypto/hash.h>
 #include <crypto/hash_info.h>
-#include "./include/hw_rscan_utils.h"
+#include "hw_rscan_utils.h"
 
 int kcode_scan(uint8_t *hash);
 size_t kcode_get_size(void);

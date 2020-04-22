@@ -3,7 +3,7 @@
 #include <huawei_platform/devdetect/hw_dev_dec.h>
 #include <linux/mtd/hisi_nve_interface.h>
 #include <huawei_platform/log/hw_log.h>
-#include "tpkit_platform_adapter.h"
+#include "../tpkit_platform_adapter.h"
 
 #define HWLOG_TAG tp_color
 HWLOG_REGIST();

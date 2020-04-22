@@ -19,7 +19,7 @@
 #include <linux/regmap.h>
 #include <linux/semaphore.h>
 #include "lp8556.h"
-#include "hisi_fb.h"
+#include "../hisi_fb.h"
 #include "../hisi_fb_panel.h"
 
 #define TEST_ERROR_CHIP_INIT     BIT(16)

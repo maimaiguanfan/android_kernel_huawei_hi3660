@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  */
 
-#include <irda_driver.h>
+#include "irda_driver.h"
 
 #define IRDA_BUFF_SIZE		50
 #define IRDA_SUCCESS		0

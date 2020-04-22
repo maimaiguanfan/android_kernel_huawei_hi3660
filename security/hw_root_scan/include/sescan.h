@@ -20,7 +20,7 @@
 #include <linux/version.h>
 #include <crypto/hash.h>
 #include <crypto/hash_info.h>
-#include "./include/hw_rscan_utils.h"
+#include "hw_rscan_utils.h"
 
 /* selinux_enforcing is kernel variable */
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP

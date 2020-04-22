@@ -27,7 +27,7 @@
 #include <linux/ctype.h>
 #include <linux/hrtimer.h>
 #include "synaptics.h"
-#include <../../huawei_touchscreen_chips.h>
+#include "../../huawei_touchscreen_chips.h"
 #include <linux/gpio.h>
 #include <linux/regulator/consumer.h>
 

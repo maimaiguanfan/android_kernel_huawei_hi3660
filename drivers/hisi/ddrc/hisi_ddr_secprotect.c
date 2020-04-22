@@ -25,10 +25,10 @@
 #include <linux/of.h>
 #include <linux/mutex.h>
 #include <linux/kthread.h>
-#include "securec.h"
+#include <securec.h>
 
-#include <hisi_ddr_secprotect.h>
-#include <global_ddr_map.h>
+#include "hisi_ddr_secprotect.h"
+#include "../ap/platform/hi3660/global_ddr_map.h"
 #include <linux/hisi/rdr_pub.h>
 #include <linux/hisi/util.h>
 #include <linux/hisi/hisi_ddr.h>

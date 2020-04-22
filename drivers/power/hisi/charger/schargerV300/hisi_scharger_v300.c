@@ -24,7 +24,7 @@
 #include <linux/hisi/usb/hisi_usb.h>
 #include <linux/power/hisi/hisi_bci_battery.h>
 #include <linux/power/hisi/coul/hisi_coul_drv.h>
-#include <hisi_scharger_v300.h>
+#include "hisi_scharger_v300.h"
 #include <linux/raid/pq.h>
 #include <linux/mfd/hisi_pmic.h>
 #include <pmic_interface.h>

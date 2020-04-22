@@ -15,8 +15,8 @@
 #include <linux/types.h>
 #include <linux/workqueue.h>
 #include <chipset_common/security/hw_kernel_stp_interface.h>
-#include "./include/hw_rscan_utils.h"
-#include "./include/hw_rscan_scanner.h"
+#include "include/hw_rscan_utils.h"
+#include "include/hw_rscan_scanner.h"
 
 static int __init rscan_module_init(void);
 static void __exit rscan_module_exit(void);

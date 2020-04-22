@@ -46,7 +46,7 @@
  *
  */
 
-#include <securec.h>
+#include "securec.h"
 #include <osl_generic.h>
 #include <osl_spinlock.h>
 #include <osl_module.h>

@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  */
 
-#include <irda_driver.h>
+#include "irda_driver.h"
 #include <linux/regulator/consumer.h>
 #include <linux/pinctrl/consumer.h>
 

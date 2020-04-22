@@ -1,6 +1,6 @@
 #ifndef _LCDKIT_BIAS_IC_COMMON_H_
 #define _LCDKIT_BIAS_IC_COMMON_H_
-#include "lcdkit_bias_bl_utility.h"
+#include "../core/common/hisi/lcdkit_bias_bl_utility.h"
 
 #define BIAS_IC_READ_INHIBITION       0x01
 #define BIAS_IC_HAVE_E2PROM           0x02

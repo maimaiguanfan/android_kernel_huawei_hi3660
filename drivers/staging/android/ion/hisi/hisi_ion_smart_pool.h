@@ -17,7 +17,7 @@
 
 #include <linux/kthread.h>
 #include <linux/types.h>
-#include "ion_priv.h"
+#include "../ion_priv.h"
 
 #define LOWORDER_WATER_MASK (64*4)
 #define MAX_POOL_SIZE (128*64*4)

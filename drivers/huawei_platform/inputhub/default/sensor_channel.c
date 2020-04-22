@@ -19,8 +19,8 @@
 #include <linux/miscdevice.h>
 #include <linux/uaccess.h>
 #include <linux/device.h>
-#include <huawei_platform/inputhub/sensorhub.h>
-#include <sensor_detect.h>
+#include <huawei_platform/inputhub/sensorhub.h"
+#include "sensor_detect.h>
 #include "contexthub_route.h"
 #include "contexthub_boot.h"
 #include "sensor_config.h"

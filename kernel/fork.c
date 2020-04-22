@@ -97,7 +97,7 @@
 #include <cpu_netlink/cpu_netlink.h>
 #endif
 #ifdef CONFIG_HW_CGROUP_PIDS
-#include <./cgroup_huawei/cgroup_pids.h>
+#include "cgroup_huawei/cgroup_pids.h"
 #endif
 #include <linux/cpufreq_times.h>
 #ifdef CONFIG_HWAA

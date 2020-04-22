@@ -11,7 +11,7 @@
 #ifndef __LINUX_LP8556_H
 #define __LINUX_LP8556_H
 
-#include "hisi_fb.h"
+#include "../hisi_fb.h"
 #include <linux/hisi/hw_cmdline_parse.h> //for runmode_is_factory
 
 #if defined(CONFIG_LCDKIT_DRIVER)

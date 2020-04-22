@@ -6,7 +6,7 @@
  * Create: 2016-06-18
  */
 
-#include "./include/hw_rscan_utils.h"
+#include "include/hw_rscan_utils.h"
 
 int get_ro_secure(void)
 {

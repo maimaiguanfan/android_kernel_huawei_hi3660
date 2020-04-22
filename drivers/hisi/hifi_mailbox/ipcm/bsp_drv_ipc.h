@@ -6,7 +6,7 @@
 #include <asm/io.h>
 #include "drv_comm.h"
 
-#include "mdrv_ipc_enum.h"
+#include "../mailbox/mdrv_ipc_enum.h"
 
 #ifdef __cplusplus
 extern "C" {
