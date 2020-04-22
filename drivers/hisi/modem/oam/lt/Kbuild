@@ -130,5 +130,5 @@ tlmsp-objs += $(OAMDIR)/lt/comm/scm/SCMSoftDecode.o
 obj-y  := tlmsp.o
 
 
-subdir-ccflags-y := -Werror
+#subdir-ccflags-y := -Werror
 
