@@ -1,4 +1,4 @@
-HI110X_DRIVER_BUILTIN_PATH ?= $(subst ",,$(CONFIG_HI11XX_DRIVER_PATH))
+HI110X_DRIVER_BUILTIN_PATH ?= drivers/connectivity/hi11xx
 DRIVER_FLODER = platform
 
 export _PRE_PRODUCT_VERSION ?= 1103
@@ -20,7 +20,7 @@ DRIVER_PATH=$(HI110X_DRIVER_SRC_PATH)/$(DRIVER_FLODER)
 include $(DRIVER_PATH)/$(HI110X_COMM_DEFCONFIG)
 include $(DRIVER_PATH)/$(PLAT_DEFCONFIG_FILE)
 
-$(warning defconfig: $(DRIVER_PATH)/$(PLAT_DEFCONFIG_FILE))
+#$(warning defconfig: $(DRIVER_PATH)/$(PLAT_DEFCONFIG_FILE))
 
 oal-objs := oal_bus_if.o oal_main.o oal_mem.o oal_net.o oal_hardware.o oal_schedule.o oal_pci_if.o oal_aes.o oal_kernel_file.o oal_cfg80211.o oal_sdio_host.o oal_profiling.o oal_hcc_host.o oal_hcc_bus.o oal_hcc_test.o oal_softwdt.o oal_dft.o oal_workqueue.o oal_pcie_host.o oal_pcie_linux.o oal_pcie_pm.o oal_fsm.o oal_pcie_firmware.o
 
@@ -189,9 +189,9 @@ HI110X_VERSION="\"commitId:$(HI110X_VER_COMMIT_ID), commitTime:$(HI110X_VER_COMM
 KBUILD_CFLAGS += -DHI110X_DRV_VERSION=$(HI110X_VERSION)
 #endif
 endif
-$(warning HI110X_VER_COMMIT_ID: $(HI110X_VER_COMMIT_ID))
-$(warning HI110X_VER_COMMIT_TIME: $(HI110X_VER_COMMIT_TIME))
-$(warning HI110X_VERSION: $(HI110X_VERSION))
+#$(warning HI110X_VER_COMMIT_ID: $(HI110X_VER_COMMIT_ID))
+#$(warning HI110X_VER_COMMIT_TIME: $(HI110X_VER_COMMIT_TIME))
+#$(warning HI110X_VERSION: $(HI110X_VERSION))
 #$(warning INCLUDE: $(HI110X_INCLUDES))
 
 EXTRA_CFLAGS = $(HI110X_INCLUDES)
