@@ -4,7 +4,8 @@
 
 subdir-ccflags-$(CONFIG_HISI_BB)               += -Idrivers/hisi/mntn/blackbox/ \
                                                -I$(srctree)/drivers/hisi/tzdriver/libhwsecurec
-subdir-ccflags-$(CONFIG_HISI_NOC)              += -Idrivers/hisi/mntn/ -Wall -Werror
+#subdir-ccflags-$(CONFIG_HISI_NOC)              += -Idrivers/hisi/mntn/ -Wall -Werror
+subdir-ccflags-$(CONFIG_HISI_NOC)              += -Idrivers/hisi/mntn/ -Wall
 
 obj-$(CONFIG_HISI_NOC) +=  hisi_noc.o             \
                            hisi_noc_err_probe.o       \

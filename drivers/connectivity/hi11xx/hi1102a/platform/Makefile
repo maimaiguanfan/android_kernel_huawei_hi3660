@@ -203,7 +203,8 @@ EXTRA_CFLAGS += $(COPTS) $(KBUILD_CFLAGS)
 ifeq ($(CONN_NON_STRICT_CHECK),y)
 $(warning hisi connectivity driver compile strict check disable)
 else
-EXTRA_CFLAGS += -Werror -Wuninitialized -Wempty-body -Wclobbered -Wmissing-parameter-type -Wold-style-declaration -Woverride-init -Wtype-limits
+#EXTRA_CFLAGS += -Werror -Wuninitialized -Wempty-body -Wclobbered -Wmissing-parameter-type -Wold-style-declaration -Woverride-init -Wtype-limits
+EXTRA_CFLAGS += -Wuninitialized -Wempty-body -Wclobbered -Wmissing-parameter-type -Wold-style-declaration -Woverride-init -Wtype-limits
 endif
 
 EXTRA_CFLAGS +=  -fno-pic

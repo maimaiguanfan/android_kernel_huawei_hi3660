@@ -15,4 +15,4 @@ else
 obj-y		    += loadm_mbb.o
 endif
 
-subdir-ccflags-y := -Werror
+#subdir-ccflags-y := -Werror

@@ -1,5 +1,6 @@
 # hi6402 dsp device driver
-subdir-ccflags-y += -Wall -Werror
+#subdir-ccflags-y += -Wall -Werror
+subdir-ccflags-y += -Wall
 
 ccflags-y += -Idrivers/devkit/audiokit/
 EXTRA_CFLAGS += -Idrivers/hisi/slimbus/
