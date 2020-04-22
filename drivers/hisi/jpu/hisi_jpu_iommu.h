@@ -18,7 +18,7 @@
 #include <linux/device.h>
 #include <linux/platform_device.h>
 #include <linux/version.h>
-#include <linux/hisi-iommu.h>
+#include <linux/hisi/hisi-iommu.h>
 
 struct jpu_iommu_page_info {
 	struct page *page;
