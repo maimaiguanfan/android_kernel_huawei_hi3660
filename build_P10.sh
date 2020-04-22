@@ -8,7 +8,7 @@ export ARCH=arm64
 
 mkdir out
 
-make ARCH=arm64 O=out Pangu_defconfig  > /dev/null
+make ARCH=arm64 O=out Pangu_P10_defconfig  > /dev/null
 
 
 make ARCH=arm64 O=out -j64 > /dev/null
