@@ -39,7 +39,7 @@
 //#endif
 //#include <linux/mfd/hisi_hi6xxx_pmic.h>
 //#include <linux/hisi/hi6xxx-lcd_type.h>
-#include "tpkit_platform_adapter.h>
+#include "tpkit_platform_adapter.h"
 #include "huawei_ts_kit_api.h"
 #include "huawei_ts_kit_algo.h"
 #include <linux/hwspinlock.h>

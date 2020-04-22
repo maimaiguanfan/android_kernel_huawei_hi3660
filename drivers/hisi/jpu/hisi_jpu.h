@@ -39,7 +39,7 @@
 
 #include <linux/ion.h>
 #include <linux/hisi/hisi_ion.h>
-#include <linux/hisi-iommu.h>
+#include <linux/hisi/hisi-iommu.h>
 
 #include "hisi_jpu_def.h"
 #include "hisi_jpu_common.h"

@@ -65,7 +65,7 @@
 #include <linux/file.h>
 #include <linux/dma-buf.h>
 #include <linux/genalloc.h>
-#include <linux/hisi-iommu.h>
+#include <linux/hisi/hisi-iommu.h>
 
 #include <linux/atomic.h>
 
