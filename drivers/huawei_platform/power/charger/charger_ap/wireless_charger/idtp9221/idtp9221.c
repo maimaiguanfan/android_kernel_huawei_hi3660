@@ -21,11 +21,11 @@
 #include <huawei_platform/power/wireless_charger.h>
 #include <huawei_platform/power/wireless_transmitter.h>
 #include <huawei_platform/power/wired_channel_switch.h>
-#include <idtp9221.h>
-#include <idtp9221_fw_sram.h>
+#include "idtp9221.h"
+#include "idtp9221_fw_sram.h"
 #ifdef WIRELESS_CHARGER_FACTORY_VERSION
-#include <idtp9221_fw_otp.h>
-#include <stwlc33_fw_nvm.h>
+#include "idtp9221_fw_otp.h"
+#include "stwlc33_fw_nvm.h"
 #endif
 
 #define HWLOG_TAG wireless_idtp9221
