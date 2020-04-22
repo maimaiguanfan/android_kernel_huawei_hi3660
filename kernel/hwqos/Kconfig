@@ -1,0 +1,5 @@
+config HW_QOS_THREAD
+    bool "iaware 5.0 qos thread"
+    default n
+    help
+      if set, qos thread is propagated by lock&binder, and picked first in lock's waitlist

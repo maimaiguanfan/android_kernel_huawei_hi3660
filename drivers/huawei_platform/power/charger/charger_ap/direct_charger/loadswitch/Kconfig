@@ -1,0 +1,21 @@
+#
+# huawei loadswitch device drivers
+#
+
+source "drivers/huawei_platform/power/charger/charger_ap/direct_charger/loadswitch/dual_loadswitch/Kconfig"
+
+config DUAL_LOADSWITCH
+	bool "dual_loadswitch"
+	default n
+	help
+	  Say Y here to enable dual loadswitch driver.
+	  This driver provides a unified interface for dual loadswtich.
+	  Support device:
+	  dual_rt9748
+	  dual_fpf2283
+
+config RT9748
+	bool "rt9748"
+	default n
+	help
+	  Say Y here to enable rt9748 driver.

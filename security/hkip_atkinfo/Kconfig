@@ -1,0 +1,13 @@
+config HKIP_ATKINFO
+	bool "Upload HKIP attack information"
+	depends on HISI_HHEE
+	default n
+	help
+	Upload the attack information reported by HKIP to Huawei server.
+
+config HKIP_ATKINFO_DEBUGFS
+	bool "Upload HKIP attack information debugfs"
+	depends on HKIP_ATKINFO
+	default n
+	help
+	The debugfs interface for the feature of uploading the attack information.

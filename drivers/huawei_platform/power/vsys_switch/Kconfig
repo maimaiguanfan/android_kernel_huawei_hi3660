@@ -1,0 +1,38 @@
+config HUAWEI_VSYS_SWITCH
+	bool "huawei vsys switch"
+	default n
+	help
+	  Macro for vsys switch module
+	  Vsys switch module controls the switching
+	  between buck channel and sc channel to
+	  achieve high efficiency
+
+config HUAWEI_VSYS_SC_DA9313
+	bool "huawei vsys sc da9313"
+	depends on HUAWEI_VSYS_SWITCH
+	default n
+	help
+	  Macro for sc da9313 driver
+	  SC da9313 driver controls the basic
+	  functions such as enable/disable, I2c
+	  read/write
+
+config HUAWEI_VSYS_OVP_SWITCH_FPF2283
+	bool "huawei vsys ovp switch fpf2283"
+	depends on HUAWEI_VSYS_SWITCH
+	default n
+	help
+	  Macro for ovp switch fpf2283 driver
+	  Ovp switch fpf2283 driver controls the
+	  basic functions such as enable/disable,
+	  I2C read/write
+
+config HUAWEI_VSYS_BUCK_TPS62180
+	bool "huawei vsys buck tps62180"
+	depends on HUAWEI_VSYS_SWITCH
+	default n
+	help
+	  Macro for buck tps62180 driver
+	  Buck tps62180 driver controls the basic functions
+	  such as enable/disable, output voltage value between
+	  high and low

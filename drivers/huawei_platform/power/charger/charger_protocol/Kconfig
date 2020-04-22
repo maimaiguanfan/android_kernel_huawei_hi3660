@@ -1,0 +1,18 @@
+#
+# huawei charger protocol drivers
+#
+
+config CHARGER_PROTOCOL
+	bool "charger protocol"
+	default n
+	help
+	  Say Y here to enable charger protocol driver.
+	  This driver provides a unified interface to the charger protocol.
+	  Currently supported charger protocols include Huawei's private SCP protocol.
+
+config CHARGER_PROTOCOL_SCP
+	bool "huawei charger protocol with scp"
+	depends on CHARGER_PROTOCOL
+	default n
+	help
+	  Say Y here to enable charger scp protocol driver.

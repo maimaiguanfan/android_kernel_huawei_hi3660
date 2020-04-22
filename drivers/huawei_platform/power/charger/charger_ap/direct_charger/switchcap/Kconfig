@@ -1,0 +1,23 @@
+#
+# huawei switchcap device drivers
+#
+
+config BQ25970
+	bool "bq25970"
+	default n
+	help
+	  Say Y here to enable bq25970 driver.
+	  BQ25970 is a 97% efficient, 8-A battery charging solution using a
+	  switched cap architecture.
+	  This architecture and the integrated FETs are optimized to enable
+	  a 50% duty cycle.
+
+config LTC7820
+	bool "ltc7820"
+	default n
+	help
+	  Say Y here to enable ltc7820 driver.
+	  LTC7820 is a fixed ratio high voltage high power switched capacitor
+	  and charge pump controller.
+	  This device achieves a 2:1 step-down ratio form an input voltage as
+	  high as 72v.

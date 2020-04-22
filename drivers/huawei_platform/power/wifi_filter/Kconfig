@@ -1,0 +1,8 @@
+config DOZE_FILTER
+	tristate "Huawei doze wifi filter Support"
+	---help---
+        the wifi filter when enter doze mode,open it
+config HW_STRICT_RST
+	tristate "Send rst Support"
+	---help---
+        send reset when close socket,open it

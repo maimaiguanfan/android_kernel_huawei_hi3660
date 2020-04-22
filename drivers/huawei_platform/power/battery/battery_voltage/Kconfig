@@ -1,0 +1,12 @@
+config HUAWEI_BATTERY_VOLTAGE
+	bool "huawei BATTERY VOLTAGE"
+	default n
+	help
+	  Say Y here to enable battery voltage driver.
+	  This driver provides a unified interface
+	  for the battery voltage.
+	  Currently supported get battery voltage with hkadc.
+
+config HUAWEI_VBAT_HKADC
+	bool "huawei vbat hkadc"
+	default n

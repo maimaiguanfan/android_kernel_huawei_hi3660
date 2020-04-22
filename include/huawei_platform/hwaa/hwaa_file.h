@@ -1,0 +1,13 @@
+
+#ifndef _HWAA_FILE_H
+#define _HWAA_FILE_H
+
+#define HWAA_FILE_MODE_READ 0x01
+#define HWAA_FILE_MODE_WRITE 0x02
+
+#define HWAA_FILE_PERM_NULL 0x00
+#define HWAA_FILE_PERM_READ 0x01
+#define HWAA_FILE_PERM_WRITE 0x02
+#define HWAA_FILE_PERM_READ_WRITE 0x03
+
+#endif

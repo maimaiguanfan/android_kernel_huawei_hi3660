@@ -1,0 +1,1 @@
+obj-$(CONFIG_HUAWEI_TYPEC_FUSB301) += fusb301.o

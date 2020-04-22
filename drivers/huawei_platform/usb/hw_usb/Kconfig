@@ -1,0 +1,9 @@
+#
+# huawei usb drivers
+#
+
+config HUAWEI_USB
+	bool "huawei usb"
+	default n
+	help
+	  Say Y here to enable usb driver.

@@ -1,0 +1,12 @@
+config HWAA
+	bool "application authentication"
+	default y
+	help
+		Say yes here to support application authentication.
+
+config HWAA_ENG_DEBUG
+	bool "application authentication for eng debug"
+	default n
+	help
+		Say yes here to support application authentication eng debug.
+

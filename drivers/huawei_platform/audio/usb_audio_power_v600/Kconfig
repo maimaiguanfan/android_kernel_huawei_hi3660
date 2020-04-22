@@ -1,0 +1,5 @@
+config USB_AUDIO_POWER_V600
+	tristate "Support for usb audio power v600 control"
+	default n
+	---help---
+	 Say Y here if you want to support usb audio power v600 control

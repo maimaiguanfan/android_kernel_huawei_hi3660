@@ -1,0 +1,27 @@
+#
+# huawei wired channel switch drivers
+#
+
+config WIRED_CHANNEL_SWITCH
+	bool "wired channel switch"
+	default n
+	help
+	  Say Y here to enable wired channel switch driver.
+	  This driver provides a unified interface for
+	  wired channel. Current methods of controlling wired channel
+	  include OVP or NCP3902.
+
+config WIRED_CHANNEL_OVP_SWITCH
+	bool "wired channel ovp switch"
+	default n
+	help
+	  Say Y here to enable wired channel ovp switch driver.
+	  This driver provides a unified interface for
+	  wired channel ovp switch. OVP switch is used between charging IC and charger
+	  to cut off VBUS when overvoltage occurs.
+
+config WIRED_CHANNEL_NCP3902_SWITCH
+	bool "wired channel ncp3902 switch"
+	default n
+	help
+	  Say Y here to enable wired channel ncp3902 switch driver.

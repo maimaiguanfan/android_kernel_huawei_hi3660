@@ -1,0 +1,18 @@
+#
+# Copyright (c) Huawei Technologies Co., Ltd. 2017-2018. All rights reserved.
+# Description: Cryptographic API Configuration
+# Author: wangtienan <wangtienan@huawei.com>
+# Create: 2017-09-23
+#
+
+menu "Huawei kernel mdpp selftest"
+
+config HUAWEI_CRYPTO_TEST_MDPP
+	tristate "MDPP selftest module"
+	select CRYPTO_MANAGER
+	help
+	  Tests for a subset of crypto algo.
+
+endmenu
+#a blank line must be existed
+

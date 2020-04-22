@@ -1,0 +1,6 @@
+config HIGH_RESISTANCE_HS_DET
+	tristate "high resistance headset detection driver support"
+	default n
+	---help---
+	Say Y here to support the high resistance headset detection
+

@@ -1,0 +1,1 @@
+obj-$(CONFIG_RT9471_CHARGER) += rt9471.o

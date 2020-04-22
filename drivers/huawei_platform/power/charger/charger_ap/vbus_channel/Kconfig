@@ -1,0 +1,32 @@
+#
+# huawei vbus channel drivers
+#
+
+config VBUS_CHANNEL
+	bool "vbus channel"
+	default n
+	help
+	  Say Y here to enable vbus channel driver.
+	  This driver provides a unified interface for the vbus.
+	  Currently supported charger channel and boost gpio channel
+	  as a VBUS output function.
+
+config VBUS_CHANNEL_CHARGER
+	bool "vbus channel with charger"
+	depends on VBUS_CHANNEL
+	default n
+	help
+	  Say Y here to enable vbus channel driver.
+	  This configuration item depends on VBUS_CHANNEL_CHARGER.
+	  This driver will implement a charger channel
+	  as a VBUS output function.
+
+config VBUS_CHANNEL_BOOST_GPIO
+	bool "vbus channel with boost"
+	depends on VBUS_CHANNEL
+	default n
+	help
+	  Say Y here to enable vbus channel driver.
+	  This configuration item depends on VBUS_CHANNEL_CHARGER.
+	  This driver will implement a boost channel
+	  as a VBUS output function.

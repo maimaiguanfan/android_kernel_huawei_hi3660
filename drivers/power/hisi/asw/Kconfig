@@ -1,0 +1,9 @@
+#
+# hisi battery hisi_asw drivers
+#
+
+config HISI_ASW
+	bool "hisi battery asw protect battery"
+	default n
+	help
+	  Say Y here to enable hisi asw protect battery.

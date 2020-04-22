@@ -1,0 +1,13 @@
+config HISI_USB_TYPEC
+	bool "Hisilicon USB Typei-C Driver"
+	help
+	  Say Y to enable Hisilicon USB Typec Driver
+
+config HISI_USB_TYPEC_DBG
+	bool "Hisilicon USB Type-C driver verbost debug infomation."
+	depends on HISI_USB_TYPEC
+	help
+	  Say Y here if you want verbost debug infomation. If unsure, say N.
+
+source "drivers/usb/hisi-usb-typec/hisi-tcpc/Kconfig"
+

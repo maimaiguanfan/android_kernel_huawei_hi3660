@@ -1,0 +1,19 @@
+#
+# huawei dual loadswitch device drivers
+#
+
+config DUAL_LOADSWITCH_RT9748
+	bool "dual_loadswitch_rt9748"
+	default n
+	help
+	  Say Y here to enable dual rt9748 driver.
+	  RT9748 is a 6-A smart load switch battery charger, which integrates an
+	  internal load switch with charge pump control and 4-path constant current
+	  and constant voltage regulation, a 5-way hardware protection, and a 10-channel
+	  12-bit ADC converter.
+
+config DUAL_LOADSWITCH_FPF2283
+	bool "dual_loadwitch_fpf2283"
+	default n
+	help
+	  Say Y here to enable dual fpf2283 driver.

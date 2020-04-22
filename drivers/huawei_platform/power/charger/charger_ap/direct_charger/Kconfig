@@ -1,0 +1,32 @@
+#
+# huawei direct charger drivers
+#
+
+source "drivers/huawei_platform/power/charger/charger_ap/direct_charger/loadswitch/Kconfig"
+source "drivers/huawei_platform/power/charger/charger_ap/direct_charger/switchcap/Kconfig"
+
+config LOADSWITCH
+	bool "loadswitch"
+	default n
+	help
+	  Say Y here to enable loadswitch driver.
+	  This driver provides a unified interface for loadswtich.
+	  Support device:
+	  rt9748
+	  fpf2283
+
+config SWITCHCAP
+	bool "switchcap"
+	default n
+	help
+	  Say Y here to enable switchcap driver.
+	  This driver provides a unified interface for switchcap.
+	  Support device:
+	  bq25970
+	  ltc7820
+
+config INA231_FOR_CHARGE
+	bool "ina231_for_charge"
+	default n
+	help
+	  Say Y here to enable ina231 driver.
