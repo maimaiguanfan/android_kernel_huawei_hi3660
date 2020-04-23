@@ -1,6 +1,6 @@
 #ifndef __LINUX_SHMEM_H__
 #define __LINUX_SHMEM_H__
-#include "../huawei_platform/inputhub/default/protocol.h"
+#include "../huawei_platform/inputhub/hi3660/protocol.h"
 
 #include <iomcu_ddr_map.h>
 
