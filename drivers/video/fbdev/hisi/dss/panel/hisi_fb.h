@@ -71,46 +71,46 @@
 
 /*lint +e551 +e551*/
 //#include <linux/huawei/hisi_irq_affinity.h>
-#include "hisi_dss_ion.h"
-#include "hisi_dss_iommu.h"
-#include "hisi_fb_def.h"
-#include "hisi_fb_panel.h"
-#include "hisi_fb_debug.h"
-#include "hisi_dss.h"
-#include "hisi_mipi_dsi.h"
+#include "../hisi_dss_ion.h"
+#include "../hisi_dss_iommu.h"
+#include "../hisi_fb_def.h"
+#include "../hisi_fb_panel.h"
+#include "../hisi_fb_debug.h"
+#include "../hisi_dss.h"
+#include "../hisi_mipi_dsi.h"
 #include <soc_dss_interface.h>
-#include "hisi_overlay_cmdlist_utils.h"
-#include "hisi_display_effect.h"
+#include "../hisi_overlay_cmdlist_utils.h"
+#include "../hisi_display_effect.h"
 
 #if defined (CONFIG_HISI_FB_3650)
-#include "hisi_overlay_utils_hi3650.h"
+#include "../hisi_overlay_utils_hi3650.h"
 #elif defined(CONFIG_HISI_FB_6250)
-#include "hisi_overlay_utils_hi6250.h"
+#include "../hisi_overlay_utils_hi6250.h"
 #elif defined(CONFIG_HISI_FB_3660)
-#include "hisi_overlay_utils_hi3660.h"
+#include "../hisi_overlay_utils_hi3660.h"
 #elif defined(CONFIG_HISI_FB_970)
-#include "hisi_overlay_utils_kirin970.h"
+#include "../hisi_overlay_utils_kirin970.h"
 #elif defined(CONFIG_HISI_FB_V501)
-#include "hisi_overlay_utils_dssv501.h"
-#include "hisi_dpe_pipe_clk_utils.h"
+#include "../hisi_overlay_utils_dssv501.h"
+#include "../hisi_dpe_pipe_clk_utils.h"
 #elif defined(CONFIG_HISI_FB_V320)
-#include "hisi_overlay_utils_dssv320.h"
+#include "../hisi_overlay_utils_dssv320.h"
 #elif defined(CONFIG_HISI_FB_V510)
-#include "hisi_overlay_utils_dssv510.h"
+#include "../hisi_overlay_utils_dssv510.h"
 #elif defined(CONFIG_HISI_FB_V330)
-#include "hisi_overlay_utils_dssv330.h"
+#include "../hisi_overlay_utils_dssv330.h"
 #endif
 
-#include "hisi_dpe_utils.h"
-#include "hisi_overlay_utils.h"
-#include "hisi_fb_video_idle.h"
-#include "hisi_ovl_online_wb.h"
-#include "hisi_dss_sync.h"
+#include "../hisi_dpe_utils.h"
+#include "../hisi_overlay_utils.h"
+#include "../hisi_fb_video_idle.h"
+#include "../hisi_ovl_online_wb.h"
+#include "../hisi_dss_sync.h"
 
 #ifndef CONFIG_SYNC_FILE
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0)
-#include "sync.h"
-#include "sw_sync.h"
+#include "../sync.h"
+#include "../sw_sync.h"
 #else
 #include <linux/sync.h>
 #include <linux/sw_sync.h>
@@ -734,6 +734,10 @@ extern uint64_t g_pxl_clk_rate;
 extern uint8_t g_prefix_ce_support;
 extern uint8_t g_prefix_sharpness1D_support;
 extern uint8_t g_prefix_sharpness2D_support;
+
+extern int delta_bl_delayed;
+extern bool blc_enable_delayed;
+extern bool dc_switch_xcc_updated;
 
 extern uint32_t g_online_cmdlist_idxs;
 extern uint32_t g_offline_cmdlist_idxs;
