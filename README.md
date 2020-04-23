@@ -4,7 +4,7 @@
 
 解锁官方隐藏的Schedutil调度器
 
-Upstream至Linux4.9.155
+Upstream至Linux4.9.194
 
 移植970的JPEG Processing引擎
 
