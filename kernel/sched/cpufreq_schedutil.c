@@ -670,7 +670,7 @@ static void sugov_get_util(unsigned long *util, unsigned long *max, u64 time)
 static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
 				   unsigned int flags)
 {
-	if ((flags & SCHED_CPUFREQ_IOWAIT) || walt_cpu_overload_irqload(sg_cpu->cpu)) {
+	if (flags & SCHED_CPUFREQ_IOWAIT) {
 #ifdef CONFIG_HISI_CPU_FREQ_GOV_SCHEDUTIL
 		sg_cpu->iowait_boost += ((sg_cpu->iowait_boost_max - sg_cpu->iowait_boost) >> 1);
 #else
