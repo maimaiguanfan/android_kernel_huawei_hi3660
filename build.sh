@@ -2,13 +2,15 @@
 #设置环境
 echo " "
 echo "***Setting environment...***"
-echo " "
 rm -rf out/arch/arm64/boot/Image.gz
 export PATH=$PATH:/home/leo-mak/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin
 export CROSS_COMPILE=/home/leo-mak/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
 export GCC_COLORS=auto
 export ARCH=arm64
-mkdir out
+if [ ! -d "out" ];
+then
+	mkdir out
+fi
 
 #添加或更新AK3
 
@@ -34,7 +36,7 @@ cd ../..
 echo " "
 
 #输入盘古内核版本号
-printf "Please enter Pangu Kernel version number:/<>/:"
+printf "Please enter Pangu Kernel version number: "
 read v
 echo " "
 echo "Setting EXTRAVERSION"
