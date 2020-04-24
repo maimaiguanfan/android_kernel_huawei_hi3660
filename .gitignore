@@ -50,4 +50,5 @@ arch/*/include/generated
 
 out/
 drivers/hisi/tzdriver/
+mybuild.sh
 

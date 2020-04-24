@@ -1,8 +1,16 @@
-荣耀9盘古内核特性
+荣耀9盘古内核
 ===
+特性
+---
 解锁selinux状态限制，可调为permissive
 
-解锁官方隐藏的Schedutil调度器
+EROFS文件系统在permissive状态下可挂载读写
+
+解锁官方隐藏的CPU调度器Schedutil
+
+移植[荣耀9 EMUI8 Proto内核](http://github.com/JBolho/Proto)的CPU调度器Blu_Schedutil，并设为默认
+
+新增I/O调度器ZEN，并设为默认
 
 Upstream至Linux4.9.155
 
@@ -12,17 +20,35 @@ Upstream至Linux4.9.155
 
 fsync开关
 
-说明
-===
-修改SHT（华为平板M5 8.4英寸）的EMUI9.1.0.327的内核，并修复华为P10、P10 Plus、Mate9上出现不能使用WiFi的bug
+支持的设备
+---
+ **爵士定制版:**  华为P10、P10 Plus、Mate9
 
-（由于WiFi硬件不同，华为P10、P10 Plus、Mate9和荣耀9、v9（8Pro）、华为Nova2S、平板M5 8.4英寸内核不通刷。另外华为平板M5 10.8英寸为麒麟960s，未测试内核是否通刷）
+ **骑士定制版:**  荣耀9、v9（8Pro）、华为Nova2S、平板M5 8.4英寸
+ 
+		另外华为平板M5 10.8英寸为麒麟960s，待测试
 
- **支持的版本：** EMUI9.1.0所有版本、以及基于这些版本刷入的类原生ROM
+支持的系统
+---
+ 支持EMUI9.1.0所有版本、以及基于这些版本刷入的类原生ROM。虽然这个内核虽然叫9.1EROFS内核，但不是EROFS的9.1版本也能用
 
 [ **EMUI9.0.1版本请戳我** ](http://gitee.com/maimaiguanfan/Pangu9.0)
 
-感谢[kindle4jerry大佬](http://github.com/kindle4jerry)的指导
+关于发行版的说明
+---
+每个发行版本有6个文件，爵士和骑士各三个
+
+三个文件中1个是.zip，2个是.img
+
+zip是卡刷包，用[Anykernel3](http://gitee.com/maimaiguanfan/AnyKernel3)打包，适合第三方rec刷入
+
+img是镜像文件，可以fastboot刷，也可以rec刷，刷到kernel分区
+
+img中文件名带PM的SELinux状态默认为permissive模式，又称SELinux宽容模式（EROFS文件系统在permissive状态下可挂载读写，部分类原生需要permissive才能开机，如果你看不懂就别刷这个）
+
+卡刷zip会保持上一个内核的默认SeLinux状态
+
+ **前方高能！！！** 
 
 编译教程
 ===
@@ -47,7 +73,7 @@ Linux环境（Windows子系统也可以）
 ---
 打开终端，cd到源码路径
 
-修改[build.sh](http://gitee.com/maimaiguanfan/Pangu9.1/blob/master/build.sh)，改第一、二条
+修改[build.sh](http://gitee.com/maimaiguanfan/Pangu9.1/blob/master/build.sh)第七、八行
 
 `export PATH=$PATH:<你的GCC路径>/bin`
 
@@ -55,22 +81,16 @@ Linux环境（Windows子系统也可以）
 
 第三部：编译
 ---
-运行`sh build.sh`（如果你用的是WIndows子系统，请把[build.sh](http://gitee.com/maimaiguanfan/Pangu9.1EROFS/blob/master/build.sh)的代码复制出来运行，因为Windows的环境变量会影响WSL）
-
-如果你要编译的是P10（Plus）或Mate9的版本，那么运行的是`sh build_P10.sh`
+运行`sh build.sh`（如果你用的是WIndows子系统，请把第七行注释掉并复制出来单独运行，因为Windows的环境变量会影响WSL）
 
 编译过程可能会卡住，那就按一下回车
 
 如果出错，那就再运行一次`sh build.sh`，不要怕，可以断点传输
 
-如果编译成功，会输出在out/arch/arm64/boot/Image.gz
+如果编译成功，输出的6个文件都在源码目录里
 
-第四部：打包
----
-运行`sh pack.sh`
+鸣谢：
+===
+[ **kindle4jerry大佬** ](http://github.com/kindle4jerry)
 
-打包输出三个文件，都在源码目录里，两个img和一个zip
-
-zip是卡刷包，用[Anykernel3](http://gitee.com/maimaiguanfan/AnyKernel3/tree/hi3660/)打包，支持所有版本
-
-img是镜像文件，可线刷可卡刷，刷到kernel分区，仅支持9.1.0.219版本！文件名带PM的SELinux模式默认为permissive模式，又称SELinux宽容模式（如果你看不到就别刷这个）
+[ **JBolho大佬** ](http://github.com/JBolho)
