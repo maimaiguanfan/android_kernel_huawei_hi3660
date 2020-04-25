@@ -1,6 +1,6 @@
-/* SPDX-License-Identifier: GPL-2.0
- *
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+/* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #ifndef CONTAINERS_H
@@ -9,11 +9,17 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/socket.h>
 #include <net/if.h>
 #include <netinet/in.h>
-#include <sys/socket.h>
 
 #include "../uapi/wireguard.h"
+
+/* Cross platform __kernel_timespec */
+struct timespec64 {
+	int64_t tv_sec;
+	int64_t tv_nsec;
+};
 
 struct wgallowedip {
 	uint16_t family;
@@ -45,7 +51,7 @@ struct wgpeer {
 		struct sockaddr_in6 addr6;
 	} endpoint;
 
-	struct timespec last_handshake_time;
+	struct timespec64 last_handshake_time;
 	uint64_t rx_bytes, tx_bytes;
 	uint16_t persistent_keepalive_interval;
 

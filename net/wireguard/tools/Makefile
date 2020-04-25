@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 #
-# Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+# Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
 
 PKG_CONFIG ?= pkg-config
 PREFIX ?= /usr
@@ -35,19 +35,30 @@ WITH_SYSTEMDUNITS := yes
 endif
 endif
 
+PLATFORM ?= $(shell uname -s | tr '[:upper:]' '[:lower:]')
+
 CFLAGS ?= -O3
-CFLAGS += -std=gnu11 -D_GNU_SOURCE
+CFLAGS += -std=gnu99 -D_GNU_SOURCE
 CFLAGS += -Wall -Wextra
 CFLAGS += -MMD -MP
 CFLAGS += -DRUNSTATEDIR="\"$(RUNSTATEDIR)\""
 ifeq ($(DEBUG_TOOLS),y)
 CFLAGS += -g
 endif
-ifeq ($(shell uname -s),Linux)
+ifeq ($(PLATFORM),linux)
 LIBMNL_CFLAGS := $(shell $(PKG_CONFIG) --cflags libmnl 2>/dev/null)
 LIBMNL_LDLIBS := $(shell $(PKG_CONFIG) --libs libmnl 2>/dev/null || echo -lmnl)
 CFLAGS += $(LIBMNL_CFLAGS)
 LDLIBS += $(LIBMNL_LDLIBS)
+endif
+ifeq ($(PLATFORM),haiku)
+LDLIBS += -lnetwork -lbsd
+endif
+ifeq ($(PLATFORM),windows)
+CC := x86_64-w64-mingw32-gcc
+CFLAGS += -Iwincompat/include -include wincompat/compat.h
+LDLIBS += -lws2_32
+wg: wincompat/libc.o wincompat/init.o
 endif
 
 ifneq ($(V),1)
@@ -71,22 +82,22 @@ clean:
 endif
 
 install: wg
-	@install -v -d "$(DESTDIR)$(BINDIR)" && install -m 0755 -v wg "$(DESTDIR)$(BINDIR)/wg"
-	@install -v -d "$(DESTDIR)$(MANDIR)/man8" && install -m 0644 -v wg.8 "$(DESTDIR)$(MANDIR)/man8/wg.8"
+	@install -v -d "$(DESTDIR)$(BINDIR)" && install -v -m 0755 wg "$(DESTDIR)$(BINDIR)/wg"
+	@install -v -d "$(DESTDIR)$(MANDIR)/man8" && install -v -m 0644 man/wg.8 "$(DESTDIR)$(MANDIR)/man8/wg.8"
 	@[ "$(WITH_BASHCOMPLETION)" = "yes" ] || exit 0; \
-	install -v -d "$(DESTDIR)$(BASHCOMPDIR)" && install -m 0644 -v completion/wg.bash-completion "$(DESTDIR)$(BASHCOMPDIR)/wg"
+	install -v -d "$(DESTDIR)$(BASHCOMPDIR)" && install -v -m 0644 completion/wg.bash-completion "$(DESTDIR)$(BASHCOMPDIR)/wg"
 	@[ "$(WITH_WGQUICK)" = "yes" ] || exit 0; \
-	install -m 0755 -v wg-quick.bash "$(DESTDIR)$(BINDIR)/wg-quick" && install -m 0700 -v -d "$(DESTDIR)$(SYSCONFDIR)/wireguard"
+	install -v -m 0755 wg-quick/$(PLATFORM).bash "$(DESTDIR)$(BINDIR)/wg-quick" && install -v -m 0700 -d "$(DESTDIR)$(SYSCONFDIR)/wireguard"
 	@[ "$(WITH_WGQUICK)" = "yes" ] || exit 0; \
-	install -m 0644 -v wg-quick.8 "$(DESTDIR)$(MANDIR)/man8/wg-quick.8"
+	install -v -m 0644 man/wg-quick.8 "$(DESTDIR)$(MANDIR)/man8/wg-quick.8"
 	@[ "$(WITH_WGQUICK)" = "yes" -a "$(WITH_BASHCOMPLETION)" = "yes" ] || exit 0; \
-	install -m 0644 -v completion/wg-quick.bash-completion "$(DESTDIR)$(BASHCOMPDIR)/wg-quick"
+	install -v -m 0644 completion/wg-quick.bash-completion "$(DESTDIR)$(BASHCOMPDIR)/wg-quick"
 	@[ "$(WITH_WGQUICK)" = "yes" -a "$(WITH_SYSTEMDUNITS)" = "yes" ] || exit 0; \
-	install -v -d "$(DESTDIR)$(SYSTEMDUNITDIR)" && install -m 0644 -v wg-quick@.service "$(DESTDIR)$(SYSTEMDUNITDIR)/wg-quick@.service"
+	install -v -d "$(DESTDIR)$(SYSTEMDUNITDIR)" && install -v -m 0644 systemd/wg-quick@.service "$(DESTDIR)$(SYSTEMDUNITDIR)/wg-quick@.service"
 
 help:
 	@cat INSTALL
 
-.PHONY: clean install check help
+.PHONY: clean install help
 
 -include *.d

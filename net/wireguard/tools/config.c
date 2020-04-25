@@ -1,6 +1,6 @@
-/* SPDX-License-Identifier: GPL-2.0
- *
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #include <arpa/inet.h>
@@ -174,11 +174,29 @@ static inline bool parse_ip(struct wgallowedip *allowedip, const char *value)
 	return true;
 }
 
+static inline int parse_dns_retries(void)
+{
+	unsigned long ret;
+	char *retries = getenv("WG_ENDPOINT_RESOLUTION_RETRIES"), *end;
+
+	if (!retries)
+		return 15;
+	if (!strcmp(retries, "infinity"))
+		return -1;
+
+	ret = strtoul(retries, &end, 10);
+	if (*end || ret > INT_MAX) {
+		fprintf(stderr, "Unable to parse WG_ENDPOINT_RESOLUTION_RETRIES: `%s'\n", retries);
+		exit(1);
+	}
+	return (int)ret;
+}
+
 static inline bool parse_endpoint(struct sockaddr *endpoint, const char *value)
 {
 	char *mutable = strdup(value);
 	char *begin, *end;
-	int ret;
+	int ret, retries = parse_dns_retries();
 	struct addrinfo *resolved;
 	struct addrinfo hints = {
 		.ai_family = AF_UNSPEC,
@@ -219,11 +237,11 @@ static inline bool parse_endpoint(struct sockaddr *endpoint, const char *value)
 		*end++ = '\0';
 	}
 
-	for (unsigned int timeout = 1000000;;) {
+	#define min(a, b) ((a) < (b) ? (a) : (b))
+	for (unsigned int timeout = 1000000;; timeout = min(20000000, timeout * 6 / 5)) {
 		ret = getaddrinfo(begin, end, &hints, &resolved);
 		if (!ret)
 			break;
-		timeout = timeout * 3 / 2;
 		/* The set of return codes that are "permanent failures". All other possibilities are potentially transient.
 		 *
 		 * This is according to https://sourceware.org/glibc/wiki/NameResolver which states:
@@ -238,7 +256,7 @@ static inline bool parse_endpoint(struct sockaddr *endpoint, const char *value)
 			#ifdef EAI_NODATA
 				ret == EAI_NODATA ||
 			#endif
-				timeout >= 90000000) {
+				(retries >= 0 && !retries--)) {
 			free(mutable);
 			fprintf(stderr, "%s: `%s'\n", ret == EAI_SYSTEM ? strerror(errno) : gai_strerror(ret), value);
 			return false;
@@ -287,6 +305,37 @@ err:
 	return false;
 }
 
+static bool validate_netmask(struct wgallowedip *allowedip)
+{
+	uint32_t *ip;
+	int last;
+
+	switch (allowedip->family) {
+		case AF_INET:
+			last = 0;
+			ip = (uint32_t *)&allowedip->ip4;
+			break;
+		case AF_INET6:
+			last = 3;
+			ip = (uint32_t *)&allowedip->ip6;
+			break;
+		default:
+			return true; /* We don't know how to validate it, so say 'okay'. */
+	}
+
+	for (int i = last; i >= 0; --i) {
+		uint32_t mask = ~0;
+
+		if (allowedip->cidr >= 32 * (i + 1))
+			break;
+		if (allowedip->cidr > 32 * i)
+			mask >>= (allowedip->cidr - 32 * i);
+		if (ntohl(ip[i]) & mask)
+			return false;
+	}
+
+	return true;
+}
 
 static inline bool parse_allowedips(struct wgpeer *peer, struct wgallowedip **last_allowedip, const char *value)
 {
@@ -310,7 +359,7 @@ static inline bool parse_allowedips(struct wgpeer *peer, struct wgallowedip **la
 		saved_entry = strdup(mask);
 		ip = strsep(&mask, "/");
 
-		new_allowedip = calloc(1, sizeof(struct wgallowedip));
+		new_allowedip = calloc(1, sizeof(*new_allowedip));
 		if (!new_allowedip) {
 			perror("calloc");
 			free(saved_entry);
@@ -338,6 +387,9 @@ static inline bool parse_allowedips(struct wgpeer *peer, struct wgallowedip **la
 		else
 			goto err;
 		new_allowedip->cidr = cidr;
+
+		if (!validate_netmask(new_allowedip))
+			fprintf(stderr, "Warning: AllowedIP has nonzero host part: %s/%s\n", ip, mask);
 
 		if (allowedip)
 			allowedip->next_allowedip = new_allowedip;
@@ -434,7 +486,7 @@ bool config_read_line(struct config_ctx *ctx, const char *input)
 	char *line, *comment;
 	bool ret = true;
 
-	/* This is what strchrnull is for, but that isn't portable. */
+	/* This is what strchrnul is for, but that isn't portable. */
 	comment = strchr(input, COMMENT_CHAR);
 	if (comment)
 		len = comment - input;
@@ -464,8 +516,8 @@ out:
 
 bool config_read_init(struct config_ctx *ctx, bool append)
 {
-	memset(ctx, 0, sizeof(struct config_ctx));
-	ctx->device = calloc(1, sizeof(struct wgdevice));
+	memset(ctx, 0, sizeof(*ctx));
+	ctx->device = calloc(1, sizeof(*ctx->device));
 	if (!ctx->device) {
 		perror("calloc");
 		return false;
@@ -511,7 +563,7 @@ static char *strip_spaces(const char *in)
 
 struct wgdevice *config_read_cmd(char *argv[], int argc)
 {
-	struct wgdevice *device = calloc(1, sizeof(struct wgdevice));
+	struct wgdevice *device = calloc(1, sizeof(*device));
 	struct wgpeer *peer = NULL;
 	struct wgallowedip *allowedip = NULL;
 
@@ -537,7 +589,7 @@ struct wgdevice *config_read_cmd(char *argv[], int argc)
 			argv += 2;
 			argc -= 2;
 		} else if (!strcmp(argv[0], "peer") && argc >= 2) {
-			struct wgpeer *new_peer = calloc(1, sizeof(struct wgpeer));
+			struct wgpeer *new_peer = calloc(1, sizeof(*new_peer));
 
 			allowedip = NULL;
 			if (!new_peer) {

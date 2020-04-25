@@ -1,6 +1,6 @@
-/* SPDX-License-Identifier: GPL-2.0
- *
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #include <stddef.h>
@@ -21,6 +21,7 @@ static const struct {
 	{ "set", set_main, "Change the current configuration, add peers, remove peers, or change peers" },
 	{ "setconf", setconf_main, "Applies a configuration file to a WireGuard interface" },
 	{ "addconf", setconf_main, "Appends a configuration file to a WireGuard interface" },
+	{ "syncconf", setconf_main, "Synchronizes a configuration file to a WireGuard interface" },
 	{ "genkey", genkey_main, "Generates a new private key and writes it to stdout" },
 	{ "genpsk", genkey_main, "Generates a new preshared key and writes it to stdout" },
 	{ "pubkey", pubkey_main, "Reads a private key from stdin and writes a public key to stdout" }
