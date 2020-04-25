@@ -1,11 +1,12 @@
-/* SPDX-License-Identifier: GPL-2.0
- *
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #include <arpa/inet.h>
 #include <inttypes.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
 #include <net/if.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -13,6 +14,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include <time.h>
 #include <netdb.h>
 
@@ -51,18 +53,17 @@ static void sort_peers(struct wgdevice *device)
 		++peer_count;
 	if (!peer_count)
 		return;
-	peers = calloc(peer_count, sizeof(struct wgpeer *));
+	peers = calloc(peer_count, sizeof(*peers));
 	if (!peers)
 		return;
 	for_each_wgpeer(device, peer)
 		peers[i++] = peer;
-	qsort(peers, peer_count, sizeof(struct wgpeer *), peer_cmp);
+	qsort(peers, peer_count, sizeof(*peers), peer_cmp);
 	device->first_peer = peers[0];
-	peers[0]->next_peer = NULL;
 	for (i = 1; i < peer_count; ++i) {
 		peers[i - 1]->next_peer = peers[i];
-		peers[i]->next_peer = NULL;
 	}
+	peers[peer_count - 1]->next_peer = NULL;
 	free(peers);
 }
 
@@ -153,7 +154,7 @@ static size_t pretty_time(char *buf, const size_t len, unsigned long long left)
 	return offset;
 }
 
-static char *ago(const struct timespec *t)
+static char *ago(const struct timespec64 *t)
 {
 	static char buf[1024];
 	size_t offset;
@@ -390,15 +391,16 @@ int show_main(int argc, char *argv[])
 		char *interfaces = ipc_list_devices(), *interface;
 
 		if (!interfaces) {
-			perror("Unable to get devices");
+			perror("Unable to list interfaces");
 			return 1;
 		}
+		ret = !!*interfaces;
 		interface = interfaces;
 		for (size_t len = 0; (len = strlen(interface)); interface += len + 1) {
 			struct wgdevice *device = NULL;
 
 			if (ipc_get_device(&device, interface) < 0) {
-				perror("Unable to get device");
+				fprintf(stderr, "Unable to access interface %s: %s\n", interface, strerror(errno));
 				continue;
 			}
 			if (argc == 3) {
@@ -413,6 +415,7 @@ int show_main(int argc, char *argv[])
 					printf("\n");
 			}
 			free_wgdevice(device);
+			ret = 0;
 		}
 		free(interfaces);
 	} else if (!strcmp(argv[1], "interfaces")) {
@@ -424,7 +427,7 @@ int show_main(int argc, char *argv[])
 		}
 		interfaces = ipc_list_devices();
 		if (!interfaces) {
-			perror("Unable to get devices");
+			perror("Unable to list interfaces");
 			return 1;
 		}
 		interface = interfaces;
@@ -437,7 +440,7 @@ int show_main(int argc, char *argv[])
 		struct wgdevice *device = NULL;
 
 		if (ipc_get_device(&device, argv[1]) < 0) {
-			perror("Unable to get device");
+			perror("Unable to access interface");
 			return 1;
 		}
 		if (argc == 3) {

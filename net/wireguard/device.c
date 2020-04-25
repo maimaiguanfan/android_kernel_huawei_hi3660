@@ -1,6 +1,6 @@
-/* SPDX-License-Identifier: GPL-2.0
- *
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #include "queueing.h"
@@ -26,21 +26,20 @@
 
 static LIST_HEAD(device_list);
 
-static int open(struct net_device *dev)
+static int wg_open(struct net_device *dev)
 {
-	int ret;
-	struct wireguard_peer *peer;
-	struct wireguard_device *wg = netdev_priv(dev);
+	struct in_device *dev_v4 = __in_dev_get_rtnl(dev);
 #ifndef COMPAT_CANNOT_USE_IN6_DEV_GET
 	struct inet6_dev *dev_v6 = __in6_dev_get(dev);
 #endif
-	struct in_device *dev_v4 = __in_dev_get_rtnl(dev);
+	struct wg_device *wg = netdev_priv(dev);
+	struct wg_peer *peer;
+	int ret;
 
 	if (dev_v4) {
-		/* TODO: when we merge to mainline, put this check near the ip_rt_send_redirect
-		 * call of ip_forward in net/ipv4/ip_forward.c, similar to the current secpath
-		 * check, rather than turning it off like this. This is just a stop gap solution
-		 * while we're an out of tree module.
+		/* At some point we might put this check near the ip_rt_send_
+		 * redirect call of ip_forward in net/ipv4/ip_forward.c, similar
+		 * to the current secpath check.
 		 */
 		IN_DEV_CONF_SET(dev_v4, SEND_REDIRECTS, false);
 		IPV4_DEVCONF_ALL(dev_net(dev), SEND_REDIRECTS) = false;
@@ -54,24 +53,32 @@ static int open(struct net_device *dev)
 #endif
 #endif
 
-	ret = socket_init(wg, wg->incoming_port);
+	ret = wg_socket_init(wg, wg->incoming_port);
 	if (ret < 0)
 		return ret;
 	mutex_lock(&wg->device_update_lock);
 	list_for_each_entry(peer, &wg->peer_list, peer_list) {
-		packet_send_staged_packets(peer);
+		wg_packet_send_staged_packets(peer);
 		if (peer->persistent_keepalive_interval)
-			packet_send_keepalive(peer);
+			wg_packet_send_keepalive(peer);
 	}
 	mutex_unlock(&wg->device_update_lock);
 	return 0;
 }
 
-#if defined(CONFIG_PM_SLEEP) && !defined(CONFIG_ANDROID)
-static int pm_notification(struct notifier_block *nb, unsigned long action, void *data)
+#ifdef CONFIG_PM_SLEEP
+static int wg_pm_notification(struct notifier_block *nb, unsigned long action,
+			      void *data)
 {
-	struct wireguard_device *wg;
-	struct wireguard_peer *peer;
+	struct wg_device *wg;
+	struct wg_peer *peer;
+
+	/* If the machine is constantly suspending and resuming, as part of
+	 * its normal operation rather than as a somewhat rare event, then we
+	 * don't actually want to clear keys.
+	 */
+	if (IS_ENABLED(CONFIG_PM_AUTOSLEEP) || IS_ENABLED(CONFIG_ANDROID))
+		return 0;
 
 	if (action != PM_HIBERNATION_PREPARE && action != PM_SUSPEND_PREPARE)
 		return 0;
@@ -80,72 +87,81 @@ static int pm_notification(struct notifier_block *nb, unsigned long action, void
 	list_for_each_entry(wg, &device_list, device_list) {
 		mutex_lock(&wg->device_update_lock);
 		list_for_each_entry(peer, &wg->peer_list, peer_list) {
-			noise_handshake_clear(&peer->handshake);
-			noise_keypairs_clear(&peer->keypairs);
-			if (peer->timers_enabled)
-				del_timer(&peer->timer_zero_key_material);
+			del_timer(&peer->timer_zero_key_material);
+			wg_noise_handshake_clear(&peer->handshake);
+			wg_noise_keypairs_clear(&peer->keypairs);
 		}
 		mutex_unlock(&wg->device_update_lock);
 	}
 	rtnl_unlock();
-	rcu_barrier_bh();
+	rcu_barrier();
 	return 0;
 }
-static struct notifier_block pm_notifier = { .notifier_call = pm_notification };
+
+static struct notifier_block pm_notifier = { .notifier_call = wg_pm_notification };
 #endif
 
-static int stop(struct net_device *dev)
+static int wg_stop(struct net_device *dev)
 {
-	struct wireguard_device *wg = netdev_priv(dev);
-	struct wireguard_peer *peer;
+	struct wg_device *wg = netdev_priv(dev);
+	struct wg_peer *peer;
 
 	mutex_lock(&wg->device_update_lock);
 	list_for_each_entry(peer, &wg->peer_list, peer_list) {
-		skb_queue_purge(&peer->staged_packet_queue);
-		timers_stop(peer);
-		noise_handshake_clear(&peer->handshake);
-		noise_keypairs_clear(&peer->keypairs);
-		peer->last_sent_handshake = get_jiffies_64() - REKEY_TIMEOUT - HZ;
+		wg_packet_purge_staged_packets(peer);
+		wg_timers_stop(peer);
+		wg_noise_handshake_clear(&peer->handshake);
+		wg_noise_keypairs_clear(&peer->keypairs);
+		wg_noise_reset_last_sent_handshake(&peer->last_sent_handshake);
 	}
 	mutex_unlock(&wg->device_update_lock);
 	skb_queue_purge(&wg->incoming_handshakes);
-	socket_reinit(wg, NULL, NULL);
+	wg_socket_reinit(wg, NULL, NULL);
 	return 0;
 }
 
-static netdev_tx_t xmit(struct sk_buff *skb, struct net_device *dev)
+static netdev_tx_t wg_xmit(struct sk_buff *skb, struct net_device *dev)
 {
-	struct wireguard_device *wg = netdev_priv(dev);
-	struct wireguard_peer *peer;
-	struct sk_buff *next;
+	struct wg_device *wg = netdev_priv(dev);
 	struct sk_buff_head packets;
+	struct wg_peer *peer;
+	struct sk_buff *next;
 	sa_family_t family;
+	u32 mtu;
 	int ret;
 
-	if (unlikely(skb_examine_untrusted_ip_hdr(skb) != skb->protocol)) {
+	if (unlikely(wg_skb_examine_untrusted_ip_hdr(skb) != skb->protocol)) {
 		ret = -EPROTONOSUPPORT;
 		net_dbg_ratelimited("%s: Invalid IP packet\n", dev->name);
 		goto err;
 	}
 
-	peer = allowedips_lookup_dst(&wg->peer_allowedips, skb);
+	peer = wg_allowedips_lookup_dst(&wg->peer_allowedips, skb);
 	if (unlikely(!peer)) {
 		ret = -ENOKEY;
-		net_dbg_skb_ratelimited("%s: No peer is configured for %pISc\n", dev->name, skb);
+		if (skb->protocol == htons(ETH_P_IP))
+			net_dbg_ratelimited("%s: No peer has allowed IPs matching %pI4\n",
+					    dev->name, &ip_hdr(skb)->daddr);
+		else if (skb->protocol == htons(ETH_P_IPV6))
+			net_dbg_ratelimited("%s: No peer has allowed IPs matching %pI6\n",
+					    dev->name, &ipv6_hdr(skb)->daddr);
 		goto err;
 	}
 
 	family = READ_ONCE(peer->endpoint.addr.sa_family);
 	if (unlikely(family != AF_INET && family != AF_INET6)) {
 		ret = -EDESTADDRREQ;
-		net_dbg_ratelimited("%s: No valid endpoint has been configured or discovered for peer %llu\n", dev->name, peer->internal_id);
+		net_dbg_ratelimited("%s: No valid endpoint has been configured or discovered for peer %llu\n",
+				    dev->name, peer->internal_id);
 		goto err_peer;
 	}
 
+	mtu = skb_dst(skb) ? dst_mtu(skb_dst(skb)) : dev->mtu;
+
 	__skb_queue_head_init(&packets);
-	if (!skb_is_gso(skb))
-		skb->next = NULL;
-	else {
+	if (!skb_is_gso(skb)) {
+		skb_mark_not_on_list(skb);
+	} else {
 		struct sk_buff *segs = skb_gso_segment(skb, 0);
 
 		if (unlikely(IS_ERR(segs))) {
@@ -155,9 +171,9 @@ static netdev_tx_t xmit(struct sk_buff *skb, struct net_device *dev)
 		dev_kfree_skb(skb);
 		skb = segs;
 	}
-	do {
-		next = skb->next;
-		skb->next = skb->prev = NULL;
+
+	skb_list_walk_safe(skb, skb, next) {
+		skb_mark_not_on_list(skb);
 
 		skb = skb_share_check(skb, GFP_ATOMIC);
 		if (unlikely(!skb))
@@ -168,25 +184,30 @@ static netdev_tx_t xmit(struct sk_buff *skb, struct net_device *dev)
 		 */
 		skb_dst_drop(skb);
 
+		PACKET_CB(skb)->mtu = mtu;
+
 		__skb_queue_tail(&packets, skb);
-	} while ((skb = next) != NULL);
+	}
 
 	spin_lock_bh(&peer->staged_packet_queue.lock);
-	/* If the queue is getting too big, we start removing the oldest packets until it's small again.
-	 * We do this before adding the new packet, so we don't remove GSO segments that are in excess.
+	/* If the queue is getting too big, we start removing the oldest packets
+	 * until it's small again. We do this before adding the new packet, so
+	 * we don't remove GSO segments that are in excess.
 	 */
-	while (skb_queue_len(&peer->staged_packet_queue) > MAX_STAGED_PACKETS)
+	while (skb_queue_len(&peer->staged_packet_queue) > MAX_STAGED_PACKETS) {
 		dev_kfree_skb(__skb_dequeue(&peer->staged_packet_queue));
+		++dev->stats.tx_dropped;
+	}
 	skb_queue_splice_tail(&packets, &peer->staged_packet_queue);
 	spin_unlock_bh(&peer->staged_packet_queue.lock);
 
-	packet_send_staged_packets(peer);
+	wg_packet_send_staged_packets(peer);
 
-	peer_put(peer);
+	wg_peer_put(peer);
 	return NETDEV_TX_OK;
 
 err_peer:
-	peer_put(peer);
+	wg_peer_put(peer);
 err:
 	++dev->stats.tx_errors;
 	if (skb->protocol == htons(ETH_P_IP))
@@ -198,51 +219,53 @@ err:
 }
 
 static const struct net_device_ops netdev_ops = {
-	.ndo_open		= open,
-	.ndo_stop		= stop,
-	.ndo_start_xmit		= xmit,
+	.ndo_open		= wg_open,
+	.ndo_stop		= wg_stop,
+	.ndo_start_xmit		= wg_xmit,
 	.ndo_get_stats64	= ip_tunnel_get_stats64
 };
 
-static void destruct(struct net_device *dev)
+static void wg_destruct(struct net_device *dev)
 {
-	struct wireguard_device *wg = netdev_priv(dev);
+	struct wg_device *wg = netdev_priv(dev);
 
 	rtnl_lock();
 	list_del(&wg->device_list);
 	rtnl_unlock();
 	mutex_lock(&wg->device_update_lock);
 	wg->incoming_port = 0;
-	socket_reinit(wg, NULL, NULL);
-	peer_remove_all(wg); /* The final references are cleared in the below calls to destroy_workqueue. */
+	wg_socket_reinit(wg, NULL, NULL);
+	/* The final references are cleared in the below calls to destroy_workqueue. */
+	wg_peer_remove_all(wg);
 	destroy_workqueue(wg->handshake_receive_wq);
 	destroy_workqueue(wg->handshake_send_wq);
-	packet_queue_free(&wg->decrypt_queue, true);
-	packet_queue_free(&wg->encrypt_queue, true);
 	destroy_workqueue(wg->packet_crypt_wq);
-	rcu_barrier_bh(); /* Wait for all the peers to be actually freed. */
-	allowedips_free(&wg->peer_allowedips, &wg->device_update_lock);
-	ratelimiter_uninit();
-	memzero_explicit(&wg->static_identity, sizeof(struct noise_static_identity));
+	wg_packet_queue_free(&wg->decrypt_queue, true);
+	wg_packet_queue_free(&wg->encrypt_queue, true);
+	rcu_barrier(); /* Wait for all the peers to be actually freed. */
+	wg_ratelimiter_uninit();
+	memzero_explicit(&wg->static_identity, sizeof(wg->static_identity));
 	skb_queue_purge(&wg->incoming_handshakes);
 	free_percpu(dev->tstats);
 	free_percpu(wg->incoming_handshakes_worker);
 	if (wg->have_creating_net_ref)
 		put_net(wg->creating_net);
+	kvfree(wg->index_hashtable);
+	kvfree(wg->peer_hashtable);
 	mutex_unlock(&wg->device_update_lock);
 
 	pr_debug("%s: Interface deleted\n", dev->name);
 	free_netdev(dev);
 }
 
-static const struct device_type device_type = {
-	.name = KBUILD_MODNAME
-};
+static const struct device_type device_type = { .name = KBUILD_MODNAME };
 
-static void setup(struct net_device *dev)
+static void wg_setup(struct net_device *dev)
 {
-	struct wireguard_device *wg = netdev_priv(dev);
-	enum { WG_NETDEV_FEATURES = NETIF_F_HW_CSUM | NETIF_F_RXCSUM | NETIF_F_SG | NETIF_F_GSO | NETIF_F_GSO_SOFTWARE | NETIF_F_HIGHDMA };
+	struct wg_device *wg = netdev_priv(dev);
+	enum { WG_NETDEV_FEATURES = NETIF_F_HW_CSUM | NETIF_F_RXCSUM |
+				    NETIF_F_SG | NETIF_F_GSO |
+				    NETIF_F_GSO_SOFTWARE | NETIF_F_HIGHDMA };
 
 	dev->netdev_ops = &netdev_ops;
 	dev->hard_header_len = 0;
@@ -260,109 +283,132 @@ static void setup(struct net_device *dev)
 	dev->features |= WG_NETDEV_FEATURES;
 	dev->hw_features |= WG_NETDEV_FEATURES;
 	dev->hw_enc_features |= WG_NETDEV_FEATURES;
-	dev->mtu = ETH_DATA_LEN - MESSAGE_MINIMUM_LENGTH - sizeof(struct udphdr) - max(sizeof(struct ipv6hdr), sizeof(struct iphdr));
+	dev->mtu = ETH_DATA_LEN - MESSAGE_MINIMUM_LENGTH -
+		   sizeof(struct udphdr) -
+		   max(sizeof(struct ipv6hdr), sizeof(struct iphdr));
 
 	SET_NETDEV_DEVTYPE(dev, &device_type);
 
 	/* We need to keep the dst around in case of icmp replies. */
 	netif_keep_dst(dev);
 
-	memset(wg, 0, sizeof(struct wireguard_device));
+	memset(wg, 0, sizeof(*wg));
 	wg->dev = dev;
 }
 
-static int newlink(struct net *src_net, struct net_device *dev, struct nlattr *tb[], struct nlattr *data[], struct netlink_ext_ack *extack)
+static int wg_newlink(struct net *src_net, struct net_device *dev,
+		      struct nlattr *tb[], struct nlattr *data[],
+		      struct netlink_ext_ack *extack)
 {
+	struct wg_device *wg = netdev_priv(dev);
 	int ret = -ENOMEM;
-	struct wireguard_device *wg = netdev_priv(dev);
 
 	wg->creating_net = src_net;
 	init_rwsem(&wg->static_identity.lock);
 	mutex_init(&wg->socket_update_lock);
 	mutex_init(&wg->device_update_lock);
 	skb_queue_head_init(&wg->incoming_handshakes);
-	pubkey_hashtable_init(&wg->peer_hashtable);
-	index_hashtable_init(&wg->index_hashtable);
-	allowedips_init(&wg->peer_allowedips);
-	cookie_checker_init(&wg->cookie_checker, wg);
+	wg_allowedips_init(&wg->peer_allowedips);
+	wg_cookie_checker_init(&wg->cookie_checker, wg);
 	INIT_LIST_HEAD(&wg->peer_list);
 	wg->device_update_gen = 1;
 
+	wg->peer_hashtable = wg_pubkey_hashtable_alloc();
+	if (!wg->peer_hashtable)
+		return ret;
+
+	wg->index_hashtable = wg_index_hashtable_alloc();
+	if (!wg->index_hashtable)
+		goto err_free_peer_hashtable;
+
 	dev->tstats = netdev_alloc_pcpu_stats(struct pcpu_sw_netstats);
 	if (!dev->tstats)
-		goto error_1;
+		goto err_free_index_hashtable;
 
-	wg->incoming_handshakes_worker = packet_alloc_percpu_multicore_worker(packet_handshake_receive_worker, wg);
+	wg->incoming_handshakes_worker =
+		wg_packet_percpu_multicore_worker_alloc(
+				wg_packet_handshake_receive_worker, wg);
 	if (!wg->incoming_handshakes_worker)
-		goto error_2;
+		goto err_free_tstats;
 
-	wg->handshake_receive_wq = alloc_workqueue("wg-kex-%s", WQ_CPU_INTENSIVE | WQ_FREEZABLE, 0, dev->name);
+	wg->handshake_receive_wq = alloc_workqueue("wg-kex-%s",
+			WQ_CPU_INTENSIVE | WQ_FREEZABLE, 0, dev->name);
 	if (!wg->handshake_receive_wq)
-		goto error_3;
+		goto err_free_incoming_handshakes;
 
-	wg->handshake_send_wq = alloc_workqueue("wg-kex-%s", WQ_UNBOUND | WQ_FREEZABLE, 0, dev->name);
+	wg->handshake_send_wq = alloc_workqueue("wg-kex-%s",
+			WQ_UNBOUND | WQ_FREEZABLE, 0, dev->name);
 	if (!wg->handshake_send_wq)
-		goto error_4;
+		goto err_destroy_handshake_receive;
 
-	wg->packet_crypt_wq = alloc_workqueue("wg-crypt-%s", WQ_CPU_INTENSIVE | WQ_MEM_RECLAIM, 0, dev->name);
+	wg->packet_crypt_wq = alloc_workqueue("wg-crypt-%s",
+			WQ_CPU_INTENSIVE | WQ_MEM_RECLAIM, 0, dev->name);
 	if (!wg->packet_crypt_wq)
-		goto error_5;
+		goto err_destroy_handshake_send;
 
-	if (packet_queue_init(&wg->encrypt_queue, packet_encrypt_worker, true, MAX_QUEUED_PACKETS) < 0)
-		goto error_6;
-
-	if (packet_queue_init(&wg->decrypt_queue, packet_decrypt_worker, true, MAX_QUEUED_PACKETS) < 0)
-		goto error_7;
-
-	ret = ratelimiter_init();
+	ret = wg_packet_queue_init(&wg->encrypt_queue, wg_packet_encrypt_worker,
+				   true, MAX_QUEUED_PACKETS);
 	if (ret < 0)
-		goto error_8;
+		goto err_destroy_packet_crypt;
+
+	ret = wg_packet_queue_init(&wg->decrypt_queue, wg_packet_decrypt_worker,
+				   true, MAX_QUEUED_PACKETS);
+	if (ret < 0)
+		goto err_free_encrypt_queue;
+
+	ret = wg_ratelimiter_init();
+	if (ret < 0)
+		goto err_free_decrypt_queue;
 
 	ret = register_netdevice(dev);
 	if (ret < 0)
-		goto error_9;
+		goto err_uninit_ratelimiter;
 
 	list_add(&wg->device_list, &device_list);
 
-	/* We wait until the end to assign priv_destructor, so that register_netdevice doesn't
-	 * call it for us if it fails.
+	/* We wait until the end to assign priv_destructor, so that
+	 * register_netdevice doesn't call it for us if it fails.
 	 */
-	dev->priv_destructor = destruct;
+	dev->priv_destructor = wg_destruct;
 
 	pr_debug("%s: Interface created\n", dev->name);
 	return ret;
 
-error_9:
-	ratelimiter_uninit();
-error_8:
-	packet_queue_free(&wg->decrypt_queue, true);
-error_7:
-	packet_queue_free(&wg->encrypt_queue, true);
-error_6:
+err_uninit_ratelimiter:
+	wg_ratelimiter_uninit();
+err_free_decrypt_queue:
+	wg_packet_queue_free(&wg->decrypt_queue, true);
+err_free_encrypt_queue:
+	wg_packet_queue_free(&wg->encrypt_queue, true);
+err_destroy_packet_crypt:
 	destroy_workqueue(wg->packet_crypt_wq);
-error_5:
+err_destroy_handshake_send:
 	destroy_workqueue(wg->handshake_send_wq);
-error_4:
+err_destroy_handshake_receive:
 	destroy_workqueue(wg->handshake_receive_wq);
-error_3:
+err_free_incoming_handshakes:
 	free_percpu(wg->incoming_handshakes_worker);
-error_2:
+err_free_tstats:
 	free_percpu(dev->tstats);
-error_1:
+err_free_index_hashtable:
+	kvfree(wg->index_hashtable);
+err_free_peer_hashtable:
+	kvfree(wg->peer_hashtable);
 	return ret;
 }
 
 static struct rtnl_link_ops link_ops __read_mostly = {
 	.kind			= KBUILD_MODNAME,
-	.priv_size		= sizeof(struct wireguard_device),
-	.setup			= setup,
-	.newlink		= newlink,
+	.priv_size		= sizeof(struct wg_device),
+	.setup			= wg_setup,
+	.newlink		= wg_newlink,
 };
 
-static int netdevice_notification(struct notifier_block *nb, unsigned long action, void *data)
+static int wg_netdevice_notification(struct notifier_block *nb,
+				     unsigned long action, void *data)
 {
 	struct net_device *dev = ((struct netdev_notifier_info *)data)->dev;
-	struct wireguard_device *wg = netdev_priv(dev);
+	struct wg_device *wg = netdev_priv(dev);
 
 	ASSERT_RTNL();
 
@@ -372,20 +418,23 @@ static int netdevice_notification(struct notifier_block *nb, unsigned long actio
 	if (dev_net(dev) == wg->creating_net && wg->have_creating_net_ref) {
 		put_net(wg->creating_net);
 		wg->have_creating_net_ref = false;
-	} else if (dev_net(dev) != wg->creating_net && !wg->have_creating_net_ref) {
+	} else if (dev_net(dev) != wg->creating_net &&
+		   !wg->have_creating_net_ref) {
 		wg->have_creating_net_ref = true;
 		get_net(wg->creating_net);
 	}
 	return 0;
 }
 
-static struct notifier_block netdevice_notifier = { .notifier_call = netdevice_notification };
+static struct notifier_block netdevice_notifier = {
+	.notifier_call = wg_netdevice_notification
+};
 
-int __init device_init(void)
+int __init wg_device_init(void)
 {
 	int ret;
 
-#if defined(CONFIG_PM_SLEEP) && !defined(CONFIG_ANDROID)
+#ifdef CONFIG_PM_SLEEP
 	ret = register_pm_notifier(&pm_notifier);
 	if (ret)
 		return ret;
@@ -404,18 +453,18 @@ int __init device_init(void)
 error_netdevice:
 	unregister_netdevice_notifier(&netdevice_notifier);
 error_pm:
-#if defined(CONFIG_PM_SLEEP) && !defined(CONFIG_ANDROID)
+#ifdef CONFIG_PM_SLEEP
 	unregister_pm_notifier(&pm_notifier);
 #endif
 	return ret;
 }
 
-void device_uninit(void)
+void wg_device_uninit(void)
 {
 	rtnl_link_unregister(&link_ops);
 	unregister_netdevice_notifier(&netdevice_notifier);
-#if defined(CONFIG_PM_SLEEP) && !defined(CONFIG_ANDROID)
+#ifdef CONFIG_PM_SLEEP
 	unregister_pm_notifier(&pm_notifier);
 #endif
-	rcu_barrier_bh();
+	rcu_barrier();
 }

@@ -1,10 +1,11 @@
-/* SPDX-License-Identifier: GPL-2.0
- *
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
 #include <net/if.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -32,7 +33,7 @@ int showconf_main(int argc, char *argv[])
 	}
 
 	if (ipc_get_device(&device, argv[1])) {
-		perror("Unable to get device");
+		perror("Unable to access interface");
 		goto cleanup;
 	}
 
