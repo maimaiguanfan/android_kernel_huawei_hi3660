@@ -1,6 +1,6 @@
-/* SPDX-License-Identifier: GPL-2.0
- *
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #include <stdio.h>
@@ -29,7 +29,7 @@ int set_main(int argc, char *argv[])
 	device->name[IFNAMSIZ - 1] = '\0';
 
 	if (ipc_set_device(device) != 0) {
-		perror("Unable to set device");
+		perror("Unable to modify interface");
 		goto cleanup;
 	}
 

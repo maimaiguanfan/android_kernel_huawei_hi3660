@@ -1,14 +1,16 @@
-/* SPDX-License-Identifier: GPL-2.0
- *
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #include "queueing.h"
 
-struct multicore_worker __percpu *packet_alloc_percpu_multicore_worker(work_func_t function, void *ptr)
+struct multicore_worker __percpu *
+wg_packet_percpu_multicore_worker_alloc(work_func_t function, void *ptr)
 {
 	int cpu;
-	struct multicore_worker __percpu *worker = alloc_percpu(struct multicore_worker);
+	struct multicore_worker __percpu *worker =
+		alloc_percpu(struct multicore_worker);
 
 	if (!worker)
 		return NULL;
@@ -20,7 +22,8 @@ struct multicore_worker __percpu *packet_alloc_percpu_multicore_worker(work_func
 	return worker;
 }
 
-int packet_queue_init(struct crypt_queue *queue, work_func_t function, bool multicore, unsigned int len)
+int wg_packet_queue_init(struct crypt_queue *queue, work_func_t function,
+			 bool multicore, unsigned int len)
 {
 	int ret;
 
@@ -28,19 +31,23 @@ int packet_queue_init(struct crypt_queue *queue, work_func_t function, bool mult
 	ret = ptr_ring_init(&queue->ring, len, GFP_KERNEL);
 	if (ret)
 		return ret;
-	if (multicore) {
-		queue->worker = packet_alloc_percpu_multicore_worker(function, queue);
-		if (!queue->worker)
-			return -ENOMEM;
-	} else
-		INIT_WORK(&queue->work, function);
+	if (function) {
+		if (multicore) {
+			queue->worker = wg_packet_percpu_multicore_worker_alloc(
+				function, queue);
+			if (!queue->worker)
+				return -ENOMEM;
+		} else {
+			INIT_WORK(&queue->work, function);
+		}
+	}
 	return 0;
 }
 
-void packet_queue_free(struct crypt_queue *queue, bool multicore)
+void wg_packet_queue_free(struct crypt_queue *queue, bool multicore)
 {
 	if (multicore)
 		free_percpu(queue->worker);
-	WARN_ON(!ptr_ring_empty_bh(&queue->ring));
+	WARN_ON(!__ptr_ring_empty(&queue->ring));
 	ptr_ring_cleanup(&queue->ring, NULL);
 }

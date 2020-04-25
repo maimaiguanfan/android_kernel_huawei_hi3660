@@ -1,12 +1,22 @@
-/* SPDX-License-Identifier: GPL-2.0
- *
- * Copyright (C) 2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2018-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #include "curve25519.h"
 
 #include <stdint.h>
 #include <string.h>
+
+#ifndef __BYTE_ORDER__
+#include <sys/param.h>
+#if !defined(BYTE_ORDER) || !defined(BIG_ENDIAN) || !defined(LITTLE_ENDIAN)
+#error "Unable to determine endianness."
+#endif
+#define __BYTE_ORDER__ BYTE_ORDER
+#define __ORDER_BIG_ENDIAN__ BIG_ENDIAN
+#define __ORDER_LITTLE_ENDIAN__ LITTLE_ENDIAN
+#endif
 
 #ifdef __linux__
 #include <linux/types.h>
@@ -29,6 +39,23 @@ typedef int64_t s64;
 #define le32_to_cpup(a) (*(a))
 #define cpu_to_le64(a) (a)
 #endif
+static inline __le32 get_unaligned_le32(const u8 *a)
+{
+	__le32 l;
+	__builtin_memcpy(&l, a, sizeof(l));
+	return le32_to_cpup(&l);
+}
+static inline __le64 get_unaligned_le64(const u8 *a)
+{
+	__le64 l;
+	__builtin_memcpy(&l, a, sizeof(l));
+	return le64_to_cpup(&l);
+}
+static inline void put_unaligned_le64(u64 s, u8 *d)
+{
+	__le64 l = cpu_to_le64(s);
+	__builtin_memcpy(d, &l, sizeof(l));
+}
 #ifndef __always_inline
 #define __always_inline __inline __attribute__((__always_inline__))
 #endif
@@ -41,28 +68,27 @@ typedef int64_t s64;
 #ifndef __force
 #define __force
 #endif
-#define normalize_secret(a) curve25519_normalize_secret(a)
 
 static noinline void memzero_explicit(void *s, size_t count)
 {
 	memset(s, 0, count);
-	asm volatile("": :"r"(s) :"memory");
+	asm volatile("": :"r"(s) : "memory");
 }
 
 #ifdef __SIZEOF_INT128__
-#include "../crypto/curve25519-hacl64.h"
+#include "../crypto/zinc/curve25519/curve25519-hacl64.c"
 #else
-#include "../crypto/curve25519-fiat32.h"
+#include "../crypto/zinc/curve25519/curve25519-fiat32.c"
 #endif
 
-void curve25519_generate_public(uint8_t pub[static CURVE25519_POINT_SIZE], const uint8_t secret[static CURVE25519_POINT_SIZE])
+void curve25519_generate_public(uint8_t pub[static CURVE25519_KEY_SIZE], const uint8_t secret[static CURVE25519_KEY_SIZE])
 {
-	static const uint8_t basepoint[CURVE25519_POINT_SIZE] = { 9 };
+	static const uint8_t basepoint[CURVE25519_KEY_SIZE] __aligned(sizeof(uintptr_t)) = { 9 };
 
 	curve25519(pub, secret, basepoint);
 }
 
-void curve25519(uint8_t mypublic[static CURVE25519_POINT_SIZE], const uint8_t secret[static CURVE25519_POINT_SIZE], const uint8_t basepoint[static CURVE25519_POINT_SIZE])
+void curve25519(uint8_t mypublic[static CURVE25519_KEY_SIZE], const uint8_t secret[static CURVE25519_KEY_SIZE], const uint8_t basepoint[static CURVE25519_KEY_SIZE])
 {
 	curve25519_generic(mypublic, secret, basepoint);
 }
