@@ -10,6 +10,10 @@ EROFS文件系统在permissive状态下可挂载读写
 
 移植[荣耀9 EMUI8 Proto内核](http://github.com/JBolho/Proto)的CPU调度器Blu_Schedutil，并设为默认
 
+添加Dynamic Stune Boost
+
+添加WireGuard
+
 新增I/O调度器ZEN，并设为默认
 
 Upstream至Linux4.9.155
@@ -73,7 +77,7 @@ Linux环境（Windows子系统也可以）
 ---
 打开终端，cd到源码路径
 
-修改[build.sh](http://gitee.com/maimaiguanfan/Pangu9.1/blob/master/build.sh)第七、八行
+修改[build.sh](http://gitee.com/maimaiguanfan/Pangu9.1/blob/master/build.sh)第六、七行
 
 `export PATH=$PATH:<你的GCC路径>/bin`
 
@@ -91,6 +95,12 @@ Linux环境（Windows子系统也可以）
 
 鸣谢：
 ===
-[ **kindle4jerry大佬** ](http://github.com/kindle4jerry)
+[ **kindle4jerry大佬** ](http://github.com/kindle4jerry)，提供指引，帮我修复编译错误
 
-[ **JBolho大佬** ](http://github.com/JBolho)
+[ **JBolho大佬** ](http://github.com/JBolho)，他的Proto内核为我提供了大量帮助
+
+[ **engstk大佬** ](https://github.com/engstk)，他的[荣耀v10 Blu_Spark内核](http://github.com/engstk/view10)为我提供了大量帮助
+
+[ **joshuous大佬** ](http://github.com/joshuous/)，提供Dynamic Stune Boost源码
+
+还有很多位测试人员以及提供帮助和建议的人
