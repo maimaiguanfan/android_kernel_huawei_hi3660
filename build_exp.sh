@@ -42,7 +42,7 @@ echo " "
 echo "Setting EXTRAVERSION"
 
 #构建骑士版内核
-export EV=EXTRAVERSION=骑士定制PanguV$v
+export EV=EXTRAVERSION=_骑士定制PanguV$v
 echo " "
 echo "***Building default version kernel...***"
 echo " "
@@ -70,7 +70,7 @@ fi
 
 #构建爵士内核WiFi部分
 echo "***Building WiFi drivers for P10 version...***"
-export EV=EXTRAVERSION=爵士定制PanguV$v
+export EV=EXTRAVERSION=_爵士定制PanguV$v
 make ARCH=arm64 O=out $EV Pangu_P10_defconfig  > /dev/null
 make ARCH=arm64 O=out $EV -j64 > /dev/null
 
