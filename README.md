@@ -1,4 +1,4 @@
-荣耀9盘古内核
+麒麟960盘古内核
 ===
 特性
 ---
@@ -77,7 +77,7 @@ Linux环境（Windows子系统也可以）
 ---
 打开终端，cd到源码路径
 
-修改[build.sh](http://gitee.com/maimaiguanfan/Pangu9.1/blob/master/build.sh)第六、七行
+修改[build.sh](http://gitee.com/maimaiguanfan/Pangu9.1EROFS/blob/master/build.sh)第六、七行
 
 `export PATH=$PATH:<你的GCC路径>/bin`
 
