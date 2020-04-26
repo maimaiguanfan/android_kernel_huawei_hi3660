@@ -30,9 +30,9 @@ fsync开关
 
 支持的系统
 ---
- 支持EMUI9.1.0所有版本、以及基于这些版本刷入的类原生ROM。虽然这个内核虽然叫9.1EROFS内核，但不是EROFS的9.1版本也能用
+ 支持EMUI9.0.1所有版本、以及基于这些版本刷入的类原生ROM
 
-[ **EMUI9.0.1版本请戳我** ](http://gitee.com/maimaiguanfan/Pangu9.0)
+[ **EMUI9.1版本请戳我** ](http://gitee.com/maimaiguanfan/Pangu9.1EROFS)
 
 关于发行版的说明
 ---
