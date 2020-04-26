@@ -51,7 +51,7 @@ img中文件名带PM的SELinux状态默认为permissive模式，又称SELinux宽
 编译教程
 ===
 
-[请戳我](http://gitee.com/maimaiguanfan/Pangu9.1EROFS/blob/master/README.md)
+[请戳我](http://gitee.com/maimaiguanfan/Pangu9.1EROFS/tree/master#%E7%BC%96%E8%AF%91%E6%95%99%E7%A8%8B)
 
 鸣谢：
 ===
