@@ -26,10 +26,10 @@ else
 	echo "***Adding AnyKernel3...***"
 	echo " "
 	git submodule update --init --recursive
+	cd tools/AnyKernel3
 	git remote add upstream https://github.com/osm0sis/AnyKernel3
 	echo "***Updating AnyKernel3...***"
 	echo " "
-	cd tools/AnyKernel3
 	git pull upstream master
 fi
 cd ../..
