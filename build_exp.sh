@@ -47,7 +47,7 @@ echo " "
 echo "***Building default version kernel...***"
 echo " "
 make ARCH=arm64 O=out $EV Pangu_defconfig  > /dev/null
-make ARCH=arm64 O=out $EV -j128 > /dev/null
+make ARCH=arm64 O=out $EV -j256 > /dev/null
 
 #打包骑士版内核
 if [ -f out/arch/arm64/boot/Image.gz ];
@@ -72,7 +72,7 @@ fi
 echo "***Building WiFi drivers for P10 version...***"
 export EV=EXTRAVERSION=_爵士定制PanguV$v
 make ARCH=arm64 O=out $EV Pangu_P10_defconfig  > /dev/null
-make ARCH=arm64 O=out $EV -j128 > /dev/null
+make ARCH=arm64 O=out $EV -j256 > /dev/null
 
 #打包爵士版内核
 if [ -f out/arch/arm64/boot/Image.gz ];
