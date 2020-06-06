@@ -4,8 +4,6 @@
 ---
 解锁selinux状态限制，可调为permissive
 
-EROFS文件系统在permissive状态下可挂载读写
-
 解锁官方隐藏的CPU调度器Schedutil
 
 移植[荣耀9 EMUI8 Proto内核](http://github.com/JBolho/Proto)的CPU调度器Blu_Schedutil，并设为默认
