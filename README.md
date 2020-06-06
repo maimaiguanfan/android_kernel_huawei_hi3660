@@ -1,104 +1,44 @@
-麒麟960盘古内核
+for Chinese users
+
+[中文用户请点这里](http://gitee.com/maimaiguanfan/Pangu9.1EROFS)
+
+Kirin 960 Pangu Kernel
 ===
-特性
+Features
 ---
-解锁selinux状态限制，可调为permissive
+Unlock selinux limitation
 
-解锁官方隐藏的CPU调度器Schedutil
+Unblock the hidden governor Schedutil
 
-移植[荣耀9 EMUI8 Proto内核](http://github.com/JBolho/Proto)的CPU调度器Blu_Schedutil，并设为默认
+Port Blu_Schedutil governor from [Honor 9 EMUI8 Proto Kernel](http://github.com/JBolho/Proto) and set as default
 
-添加Dynamic Stune Boost
+Add Dynamic Stune Boost
 
-添加WireGuard
+Add WireGuard
 
-新增I/O调度器ZEN，并设为默认
+Port ZEN governor and set as default
 
-Upstream至Linux4.9.155
+Upstream to Linux4.9.155
 
-移植970的JPEG Processing引擎
+Port JPEG Processing Engine from Kirin 970
 
-使用GCC9.2.1编译
+fsync on/off support
 
-fsync开关
 
-支持的设备
----
- **爵士定制版:**  华为P10、P10 Plus、Mate9
+ **P10 version** is for Huawei P10, P10 Plus, Mate9
 
- **骑士定制版:**  荣耀9、v9（8Pro）、华为Nova2S、平板M5 8.4英寸
- 
-		另外华为平板M5 10.8英寸为麒麟960s，待测试
+ **H9 version** is for Honor9, 8Pro(v9), Huawei Nova2S, tablet M5(8.4 inches) 
 
-支持的系统
----
- 支持EMUI9.1.0所有版本、以及基于这些版本刷入的类原生ROM。虽然这个内核虽然叫9.1EROFS内核，但不是EROFS的9.1版本也能用
+ Support all EMUI9.1.0 versions and ROMs based on them
 
-[ **EMUI9.0.1版本请戳我** ](http://gitee.com/maimaiguanfan/Pangu9.0)
-
-关于发行版的说明
----
-每个发行版本有6个文件，爵士和骑士各三个
-
-三个文件中1个是.zip，2个是.img
-
-zip是卡刷包，用[Anykernel3](http://gitee.com/maimaiguanfan/AnyKernel3)打包，适合第三方rec刷入
-
-img是镜像文件，可以fastboot刷，也可以rec刷，刷到kernel分区
-
-img中文件名带PM的SELinux状态默认为permissive模式，又称SELinux宽容模式（EROFS文件系统在permissive状态下可挂载读写，部分类原生需要permissive才能开机，如果你看不懂就别刷这个）
-
-卡刷zip会保持上一个内核的默认SeLinux状态
-
- **前方高能！！！** 
-
-编译教程
+Credits：
 ===
-第零步
----
-Linux环境（Windows子系统也可以）
+[ **kindle4jerry** ](http://github.com/kindle4jerry)
 
-熟悉Linux终端操作
+[ **JBolho** ](http://github.com/JBolho)
 
-学习git知识
+[ **engstk** ](https://github.com/engstk)
 
+[ **joshuous** ](http://github.com/joshuous/)
 
-第一步：下载
----
-克隆源码到本地
-
-克隆或下载[GCC 9.2](http://gitee.com/maimaiguanfan/arm-gcc)到本地
-
-另外还有[GCC 10 Experiment](http://github.com/baalajimaestro/aarch64-maestro-linux-android/tree/05022020)可以使用，后面步骤用的就是[build_exp.sh](http://gitee.com/maimaiguanfan/Pangu9.1/blob/master/build_exp.sh)。但GCC10跑出来的包触摸屏有问题，可能是我忽略了某步
-
-第二步：配置
----
-打开终端，cd到源码路径
-
-修改[build.sh](http://gitee.com/maimaiguanfan/Pangu9.1EROFS/blob/master/build.sh)第六、七行
-
-`export PATH=$PATH:<你的GCC路径>/bin`
-
-`export CROSS_COMPILE=<你的GCC路径>/bin/aarch64-none-linux-gnu-`
-
-第三部：编译
----
-运行`sh build.sh`（如果你用的是WIndows子系统，请把第七行注释掉并复制出来单独运行，因为Windows的环境变量会影响WSL）
-
-编译过程可能会卡住，那就按一下回车
-
-如果出错，那就再运行一次`sh build.sh`，不要怕，可以断点传输
-
-如果编译成功，输出的6个文件都在源码目录里
-
-鸣谢：
-===
-[ **kindle4jerry大佬** ](http://github.com/kindle4jerry)，提供指引，帮我修复编译错误
-
-[ **JBolho大佬** ](http://github.com/JBolho)，他的Proto内核为我提供了大量帮助
-
-[ **engstk大佬** ](https://github.com/engstk)，他的[荣耀v10 Blu_Spark内核](http://github.com/engstk/view10)为我提供了大量帮助
-
-[ **joshuous大佬** ](http://github.com/joshuous/)，提供Dynamic Stune Boost源码
-
-还有很多位测试人员以及提供帮助和建议的人
+And many testers that I don't know their names
