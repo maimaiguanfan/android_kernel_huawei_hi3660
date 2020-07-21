@@ -3,7 +3,7 @@
 echo " "
 echo "***Setting environment...***"
 rm -rf out/arch/arm64/boot/Image.gz
-export PATH=$PATH:/home/leo-mak/aarch64-maestro-linux-android-05022020/bin
+export PATH=$PATH:/home/maimaiguanfan/aarch64-maestro-linux-android-05022020/bin
 export CROSS_COMPILE=aarch64-maestro-linux-gnu-
 export GCC_COLORS=auto
 export ARCH=arm64
