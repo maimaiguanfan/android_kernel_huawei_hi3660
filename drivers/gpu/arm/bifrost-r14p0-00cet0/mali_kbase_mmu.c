@@ -940,8 +940,8 @@ page_fault_retry:
 				/* Round page requirement up to nearest 2 MB */
 				pool = kbase_mem_select_pool(kctx, region->gpu_alloc->lb_policy_id, true);
 				pages_to_grow = (pages_to_grow +
-					((1 << pool.order) - 1))
-						>> pool.order;
+					((1 << pool->order) - 1))
+						>> pool->order;
 			} else {
 #endif
 			pool = kbase_mem_select_pool(kctx, region->gpu_alloc->lb_policy_id, false);
