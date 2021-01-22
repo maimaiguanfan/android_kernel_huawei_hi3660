@@ -1,6 +1,4 @@
-for Chinese users
-
-[中文用户请点这里](http://gitee.com/maimaiguanfan/Pangu9.1EROFS)
+[for Chinese users 中文用户请点这里](http://gitee.com/maimaiguanfan/Pangu9.1EROFS)
 
 Kirin 960 Pangu Kernel
 ===
@@ -24,12 +22,16 @@ Port JPEG Processing Engine from Kirin 970
 
 fsync on/off support
 
+Support Spectrum kernel tuning APP
+
 
  **P10 version** is for Huawei P10, P10 Plus, Mate9
 
- **H9 version** is for Honor9, 8Pro(v9), Huawei Nova2S, tablet M5(8.4 inches) 
+ **H9 version** is for Honor9, 8Pro(v9), Huawei Nova2S, tablet M5, including Kirin960s
 
- Support all EMUI9.1.0 versions and ROMs based on them
+ Support all EMUI9 versions and ROMs based on them, including EROFS filesystem
+ 
+ EMUI 9.0 and 9.1 use different versions
 
 Credits：
 ===
@@ -41,4 +43,4 @@ Credits：
 
 [ **joshuous** ](http://github.com/joshuous/)
 
-And many testers that I don't know their names
+And many testers
