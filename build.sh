@@ -57,9 +57,9 @@ then
 	tools/mkbootimg --kernel out/arch/arm64/boot/Image.gz --base 0x0 --cmdline "loglevel=4 initcall_debug=n page_tracker=on slub_min_objects=16 unmovable_isolate1=2:192M,3:224M,4:256M printktimer=0xfff0a000,0x534,0x538 androidboot.selinux=permissive buildvariant=user" --tags_offset 0x07A00000 --kernel_offset 0x00080000 --ramdisk_offset 0x07c00000 --header_version 1 --os_version 9 --os_patch_level 2020-09-05  --output PK_V"$v"_9.0_骑士定制_PM.img
 	mv out/arch/arm64/boot/Image.gz tools/AnyKernel3/Image.gz
 	cd tools/AnyKernel3
-	zip -r9 PK_V"$v"_9.1_骑士定制.zip * > /dev/null
+	zip -r9 PK_V"$v"_9.0_骑士定制.zip * > /dev/null
 	cd ../..
-	mv tools/AnyKernel3/PK_V"$v"_9.1_骑士定制.zip PK_V"$v"_9.1_骑士定制.zip
+	mv tools/AnyKernel3/PK_V"$v"_9.0_骑士定制.zip PK_V"$v"_9.0_骑士定制.zip
 	rm -rf tools/AnyKernel3/Image.gz
 	echo " "
 	echo "***Sucessfully built default version kernel...***"
@@ -83,9 +83,9 @@ then
 	tools/mkbootimg --kernel out/arch/arm64/boot/Image.gz --base 0x0 --cmdline "loglevel=4 initcall_debug=n page_tracker=on slub_min_objects=16 unmovable_isolate1=2:192M,3:224M,4:256M printktimer=0xfff0a000,0x534,0x538 androidboot.selinux=permissive buildvariant=user" --tags_offset 0x07A00000 --kernel_offset 0x00080000 --ramdisk_offset 0x07c00000 --header_version 1 --os_version 9 --os_patch_level 2020-09-05  --output PK_V"$v"_9.0_爵士定制_PM.img
 	mv out/arch/arm64/boot/Image.gz tools/AnyKernel3/Image.gz
 	cd tools/AnyKernel3
-	zip -r9 PK_V"$v"_9.1_爵士定制.zip * > /dev/null
+	zip -r9 PK_V"$v"_9.0_爵士定制.zip * > /dev/null
 	cd ../..
-	mv tools/AnyKernel3/PK_V"$v"_9.1_爵士定制.zip PK_V"$v"_9.1_爵士定制.zip
+	mv tools/AnyKernel3/PK_V"$v"_9.0_爵士定制.zip PK_V"$v"_9.0_爵士定制.zip
 	rm -rf tools/AnyKernel3/Image.gz
 	echo " "
 	echo "***Sucessfully built P10 version kernel...***"
