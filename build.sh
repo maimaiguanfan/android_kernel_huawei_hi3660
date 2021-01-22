@@ -3,8 +3,8 @@
 echo " "
 echo "***Setting environment...***"
 rm -rf out/arch/arm64/boot/Image.gz
-export PATH=$PATH:/home/maimaiguanfan/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin
-export CROSS_COMPILE=/home/maimaiguanfan/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
+export PATH=$PATH:~/aarch64-linux-android-4.9/bin
+export CROSS_COMPILE=aarch64-linux-android-
 export GCC_COLORS=auto
 export ARCH=arm64
 if [ ! -d "out" ];
@@ -40,7 +40,7 @@ printf "Please enter Pangu Kernel version number: "
 read v
 echo " "
 echo "Setting EXTRAVERSION"
-export EV=EXTRAVERSION=_Kirin960_PanguV$v
+export EV=EXTRAVERSION=_Kirin960_Pangu_V$v
 
 #构建骑士版内核
 echo " "
