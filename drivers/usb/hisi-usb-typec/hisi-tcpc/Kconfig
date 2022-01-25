@@ -1,0 +1,67 @@
+config HISI_TCPC
+	bool "Hisilicon TypeC Port Controller Device"
+	help
+	  Say Y to enable Hisilicon Typec Port Controller Driver
+
+if HISI_TCPC
+
+config HISI_TCPC_DEBUG
+	bool "Hisilicon TypeC Driver verbose debug information."
+	default n
+	help
+	  If unsure, say N.
+
+config HISI_TCPC_HI6526
+	bool "Hisilicon hi6526 Type-C Port Controller support"
+	default n
+	help
+	  Say Y to enable Hisilicon hi6525 support
+
+config TYPEC_CAP_DBGACC_SNK_SUPPORT
+	bool "DebugAccessory sink support"
+	default n
+	help
+	  Debug Accessory sink support.
+
+config TYPEC_CAP_CUSTOM_SRC_SUPPORT
+	bool "Custom SRC support"
+	default n
+	help
+	  Custom SRC support
+
+config TCPC_VSAFE0V_DETECT_SUPPORT
+	bool "TCPC Vsafe0V detect support"
+	default n
+	help
+	  TCPC Vsafe0V detect support
+
+config USB_POWER_DELIVERY_SUPPORT
+	bool "Hisilicon Power Delivery Support"
+	help
+	  Support PD using hisi tcpc.
+
+config USB_PD_ALT_MODE_SUPPORT
+	bool "Alternate Mode support"
+	default n
+	help
+	  Alternate Mode support
+
+config USB_PD_ALT_MODE_DFP_SUPPORT
+	bool "Alternate Mode DFP support"
+	default n
+	help
+	  Alternate Mode DFP support
+
+config USB_PD_UVDM_SUPPORT
+	bool "USB PD Unstructed VDM support"
+	default n
+	help
+	  USB PD Unstructed VDM support
+
+config USB_PD_CUSTOM_DBGACC_SUPPORT
+	bool "Custom Debug Accessory support"
+	default n
+	help
+	  Custom Debug Accessory support
+
+endif

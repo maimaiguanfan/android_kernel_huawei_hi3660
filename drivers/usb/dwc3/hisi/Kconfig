@@ -1,0 +1,98 @@
+config USB_DWC3_HISI
+	tristate "Hisilicon Platforms"
+	default USB_DWC3
+	help
+	  Support of USB2/3 functionality in hisilicon platforms,
+	  Say 'Y' or 'M' here if you have one such device.
+
+if USB_DWC3_HISI
+
+config USB_DWC3_NOV
+       tristate "Hisilicon Platforms NOV USB"
+       default n
+       help
+         Support of USB2 functionality in hisilicon platforms,
+         Say 'Y' or 'M' here if you have one such device.
+
+config USB_DWC3_OCT
+       tristate "Hisilicon Platforms OCT USB"
+       default n
+       help
+         Support of USB2 functionality in hisilicon platforms,
+         Say 'Y' or 'M' here if you have one such device.
+
+config USB_DWC3_APR
+	tristate "Hisilicon Platforms APR USB"
+	default n
+	help
+	  Support of USB2/3/3.1 functionality in hisilicon platforms,
+	  Say 'Y' or 'M' here if you have one such device.
+
+config USB_DWC3_MAR
+	tristate "Hisilicon Platforms MAR USB"
+	default n
+	help
+	  Support of USB2/3/3.1 functionality in hisilicon platforms,
+	  Say 'Y' or 'M' here if you have one such device.
+
+config USB_DWC3_FEB
+	tristate "Hisilicon Platforms FEB USB"
+	default n
+	help
+	  Support of USB2/3 functionality in hisilicon platforms,
+	  Say 'Y' or 'M' here if you have one such device.
+
+config USB_DWC3_JAN
+	tristate "Hisilicon Platforms JAN USB"
+	default n
+	help
+	  Support of USB2/3 functionality in hisilicon platforms,
+	  Say 'Y' or 'M' here if you have one such device.
+
+config USB_DWC3_VBUS_PLT
+	tristate "Hisilicon Platforms USB VBUS usb platform drv intf"
+	depends on HISI_PMIC
+	default n
+	help
+	  Use platform bus register usb insert/pull-out interrupt.
+
+config USB_DWC3_VBUS_SPMI
+	tristate "Hisilicon Platforms USB VBUS usb spmi drv intf"
+	depends on HISI_SPMI
+	default n
+	help
+	  Use spmi bus register usb insert/pull-out interrupt.
+
+config USB_DWC3_NYET_ABNORMAL
+	bool "Enable workaround for receiving NYET bug on hisi dwc3 feb"
+	default n
+	help
+	  There is a Bug that receiving NYET in control transfer
+	  can cause controller abnormal on hisi dwc3 feb.
+
+endif # USB_DWC3_HISI
+
+config HISI_USB_DWC3_MASK_IRQ_WORKAROUND
+	bool "Enable workaround for hisi dwc3 mask irq bug"
+	depends on USB_DWC3_HISI
+	default n
+	help
+	  For some hisi dwc3, masking dwc3 irq can't work well.
+	  Say Y here if you have such problem.
+
+comment "Debugging features"
+
+
+
+config USB_DWC3_OTG
+	bool "Enable DWC3 OTG"
+	default n
+	help
+	  Say Y here to enable DWC3 OTG feature.
+
+
+config CONTEXTHUB_PD
+	bool "Sensor CONTEXTHUB PD driver"
+	default n
+	help
+	  Say yes here if you want to use contexthub pd function

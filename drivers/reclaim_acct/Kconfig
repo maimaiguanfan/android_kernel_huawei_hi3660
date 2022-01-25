@@ -1,0 +1,5 @@
+config HW_RECLAIM_ACCT
+	bool "Huawei memory reclaim delay accounting"
+	default n
+	help
+	  Huawei memory reclaim delay accounting. Never use it as a kernel module.

@@ -1,0 +1,9 @@
+#
+# huawei single-wire devices drivers
+#
+
+config HW_SW_DEVICES
+	tristate "Single-wire communicate Keyboard with UART"
+	default n
+	help
+	  Say m here to build single-wire driver module.

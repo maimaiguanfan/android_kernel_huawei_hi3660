@@ -1,0 +1,17 @@
+menu "Hisilicon ISP FD"
+
+config HISPFD
+    tristate "Hisilicon ISP FD Drivers"
+    depends on IOMMU_API
+    help
+        Hisilicon isp face detect drivers.
+
+config HISPFD_V130
+    bool "Hisilicon ISP FD  Drivers for V130"
+    depends on HISPFD
+    default n
+    help
+        Hisilicon ISP FD Drivers for V130
+
+endmenu
+

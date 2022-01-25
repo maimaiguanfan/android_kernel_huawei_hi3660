@@ -1,0 +1,13 @@
+#
+# battery capacity control drivers
+#
+
+config HUAWEI_SOC_CONTROL
+	bool "battery capacity control"
+	default n
+	help
+	  Say Y here to enable battery capacity control driver.
+	  In some scenarios, we need to control the capacity of the battery
+	  in order to prevent the battery from working in high capacity area
+	  for a long time and reduce the cycle life of the battery.
+	  SOC: battery state of charge

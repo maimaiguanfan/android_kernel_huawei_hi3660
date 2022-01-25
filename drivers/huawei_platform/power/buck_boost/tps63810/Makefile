@@ -1,0 +1,1 @@
+obj-$(CONFIG_BUCKBOOST_TPS63810)      += tps63810.o

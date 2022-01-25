@@ -1,0 +1,7 @@
+config HUAWEI_BATTERY_TYPE_IDENTIFY
+	bool "huawei BATTERY TYPE IDENTIFY"
+	default n
+	help
+	  Say Y here to enable battery type identify driver.
+	  This driver provides interfaces to switch channel between
+	  adc and onewire communication for identify battery type.

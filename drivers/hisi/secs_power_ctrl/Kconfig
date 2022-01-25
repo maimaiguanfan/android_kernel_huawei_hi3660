@@ -1,0 +1,14 @@
+config HISI_SECS_CTRL
+	bool "HISI SECS_CTRL support"
+	default n
+	help
+	  Say yes here to support the HISI SECS CTRL
+config SECURE_TEST
+	bool "Secure Test"
+	default n
+	depends on HISI_SECS_CTRL
+	help
+	  Secure Test: In adb shell, use the following commands to test:
+	  "echo 2 > proc/secure-test" to test secure_timer_SR
+	  "echo mem > sys/power/state" into SR
+	  "echo 3 > proc/secure-test" to test aocc_key_SR

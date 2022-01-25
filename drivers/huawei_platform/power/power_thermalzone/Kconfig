@@ -1,0 +1,9 @@
+#
+# huawei power thermalzone drivers
+#
+
+config HUAWEI_POWER_THERMALZONE
+	bool "huawei power thermalzone temp"
+	default n
+	help
+	  Say Y here to enable power thermalzone driver.

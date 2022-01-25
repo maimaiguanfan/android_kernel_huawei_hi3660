@@ -1,0 +1,14 @@
+menuconfig OAE_FW_PATCH
+        tristate "Qihoo framework patch"
+        default y
+        help
+          Qihoo framework patch
+
+if OAE_FW_PATCH
+
+config OAE_DM_ROOT
+        tristate "Use oae dm as boot device"
+        default n
+        help
+         Use oae dm as boot device.
+endif # OAE_FW_PATCH

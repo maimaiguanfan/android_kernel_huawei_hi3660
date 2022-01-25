@@ -1,0 +1,18 @@
+#
+# huawei coul drivers
+#
+
+config HUAWEI_COUL
+	bool "huawei coul"
+	default n
+	help
+	  Say Y here to enable huawei coul driver.
+	  This driver provides a unified interface to the coul.
+	  Currently supported coul as below.
+	  Support coul list: bq28z610
+
+config BQ28Z610_COUL
+	bool "bq28z610 coul"
+	default n
+	help
+	  Say Y here to enable bq28z610 coul driver.

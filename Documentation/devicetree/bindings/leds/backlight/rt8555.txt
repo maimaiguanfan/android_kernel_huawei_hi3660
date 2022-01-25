@@ -1,0 +1,27 @@
+rt8555 bindings
+
+Required properties:
+- compatible		: Must be "realtek,rt8555"
+
+Optional properties:
+- name			: Name of backlight device. Default is 'rt8555'.
+- rt8555_hw_en_gpio			: GPIO to use to EN pin.
+			See Documentation/devicetree/bindings/gpio/gpio.txt
+- bl_led_num		: List of enabled channels from 0 to 5.
+			See Documentation/devicetree/bindings/leds/common.txt
+- rt8555_i2c_bus_id	: I2C bus index
+- bl_on_lk_mdelay	: Delay time before working in lk
+- bl_on_kernel_mdelay	: Delay time before working in kernel
+
+Example:
+
+	realtek,rt8555{
+		compatible = "realtek,rt8555";
+		rt8555_support = <1>;
+		reg = <0x31>;
+		rt8555_i2c_bus_id = <4>;
+		rt8555_hw_en_gpio = <10>;
+		bl_on_lk_mdelay = <0>;
+		bl_on_kernel_mdelay = <0>;
+		bl_led_num = <6>;
+	};

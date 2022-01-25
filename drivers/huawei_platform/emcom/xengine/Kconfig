@@ -1,0 +1,8 @@
+config HUAWEI_XENGINE
+	bool "Huawei xengine feature support"
+	default n
+
+config HUAWEI_EMCOM_CHANNEL
+	bool "Huawei emcom channel feature support"
+	default n
+

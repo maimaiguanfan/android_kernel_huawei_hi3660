@@ -1,0 +1,45 @@
+menu "Access Control Module"
+
+config ACM
+	bool "Enable Access Control Module"
+	default n
+	---help---
+	  Access Control Module device driver. The purpose of this module
+	  is to prevent third-party apps from deleting media files illegally.
+	  This module maintains a white list of apps. Apps in the whitelist
+	  can delete media file without any constrains, while apps not int
+	  the whitelist may not able to delete media files, instead, the files
+	  to be deleted was renamed by file system, and then move to the
+	  recycle bin by Gallery.
+
+config ACM_DSM
+	bool "Enable ACM dsm features"
+	depends on HUAWEI_DSM && ACM
+	default n
+	---help---
+	  Enable dsm features for ACM. Report delete information to dmd.
+	  For a deletion, we have much info to report, such as the app
+	  that do the delete, the direcotry that the file locates, and the
+	  file type, video file or picture. We watched very carefully not to
+	  record user privacy information.
+
+config ACM_DEBUG
+	bool "Enable ACM debug features"
+	depends on ACM
+	default n
+	---help---
+	  Enable debug info print and debugfs features for ACM. When
+	  turn on this feature, some debugfs files will be created in
+	  the /sys/debug direcotry. You can cat these files to test
+	  different part of the ACM.
+
+config ACM_TIME_COST
+	bool "Enable ACM time measurement"
+	depends on ACM
+	default n
+	---help---
+	  Enable time measurement for ACM. This includes time cost of
+	  searching the whitelist, report a record to framework and dmd.
+	  This feature is just for debug use. It shouldn't be turned on
+	  in user version.
+endmenu

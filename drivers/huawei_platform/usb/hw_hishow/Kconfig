@@ -1,0 +1,9 @@
+#
+# huawei hishow drivers
+#
+
+config HUAWEI_HISHOW
+	bool "support huawei hishow function"
+	default n
+	help
+	  Say Y here to enable hishow driver.

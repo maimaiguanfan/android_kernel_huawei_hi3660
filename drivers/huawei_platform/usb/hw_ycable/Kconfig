@@ -1,0 +1,9 @@
+#
+# huawei ycable drivers
+#
+
+config HUAWEI_YCABLE
+	bool "HUAWEI_YCABLE support"
+	default n
+	help
+	  Say Y here to enable ycable driver.

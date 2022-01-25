@@ -1,0 +1,34 @@
+#
+# Huawei storage_rofa drivers configuration
+#
+
+config HUAWEI_STORAGE_ROFA
+       bool "Huawei storage readonly First Aid module"
+       default n
+       help
+         Huawei storage readonly boot solution.
+
+         If unsure, say N.
+
+config HUAWEI_STORAGE_ROCHK
+       bool "Huawei storage readonly check module"
+       default n
+       ---help---
+         Huawei storage readonly check misc device.
+
+config HUAWEI_DYNAMIC_BRD
+       bool "Huawei dynamic create ramdisk"
+       default n
+       depends on BLK_DEV_RAM
+       help
+         Create a given size ramdisk dynamicly.
+
+         If unsure, say N.
+
+config HUAWEI_STORAGE_ROW
+       bool "Huawei redirection on write DM"
+       default n
+       depends on MD
+       ---help---
+         This device-mapper target is virtually a ROW target. This
+         target is setup by reading a string table.

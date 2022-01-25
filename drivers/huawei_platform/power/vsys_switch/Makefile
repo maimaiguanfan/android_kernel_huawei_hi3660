@@ -1,0 +1,5 @@
+obj-$(CONFIG_HUAWEI_VSYS_SWITCH) += vsys_switch.o
+
+obj-$(CONFIG_HUAWEI_VSYS_SC_DA9313) += sc_da9313/
+obj-$(CONFIG_HUAWEI_VSYS_OVP_SWITCH_FPF2283) += ovp_switch_fpf2283/
+obj-$(CONFIG_HUAWEI_VSYS_BUCK_TPS62180) += buck_tps62180/

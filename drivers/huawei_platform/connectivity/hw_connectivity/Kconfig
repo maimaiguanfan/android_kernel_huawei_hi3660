@@ -1,0 +1,22 @@
+menuconfig HWCONNECTIVITY
+	tristate "Huawei connectivity OneTrack support"
+	default n
+	help
+	  Say Y here to enable Huawei connectivity OneTrack support. This allows
+	  ap to control this module.
+
+menuconfig HW_ABS
+	bool "HUAWEI WIFI ABS support"
+	default n
+
+menuconfig HW_VOWIFI
+	bool "HUAWEI WIFI VOWIFI support"
+	default n
+
+menuconfig HW_GET_EXT_SIG
+    bool "HUAWEI WIFI HW_GET_EXT_SIG support"
+    default n
+
+menuconfig HW_GET_P2P_TX_RATE
+    bool "HUAWEI WIFI HW_GET_P2P_TX_RATE support"
+    default n
