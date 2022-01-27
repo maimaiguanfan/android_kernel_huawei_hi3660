@@ -31,7 +31,7 @@ $(obj)/cfc_data.o: $(obj)/cfc_data.c
 $(obj)/cfc_data.c: $(src)/cfc_graphgen.py $(src)/cfc_graph.py $(src)/cfc_codegen.py $(src)/cfc_rule_parser.py $(src)/template $(obj)/rule.out
 	+python $(srctree)/$(src)/cfc_codegen.py $(obj)/rule.out > $@
 $(obj)/rule.out: $(src)/rule.in
-	aarch64-linux-android-cpp $(srctree)/$(src)/rule.in > $@
+	$(CROSS_COMPILE)cpp $(srctree)/$(src)/rule.in > $@
 
 
 ccflags-y += 	-Idrivers/video/hisi/dss \
