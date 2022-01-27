@@ -702,7 +702,6 @@ static int devfreq_gpu_scene_aware_handler(struct devfreq *devfreq,
 
 static struct devfreq_governor devfreq_gpu_scene_aware = {
 	.name = "gpu_scene_aware",
-	.immutable = 1,
 	.get_target_freq = devfreq_gpu_scene_aware_func,
 	.event_handler = devfreq_gpu_scene_aware_handler,
 };

@@ -315,7 +315,6 @@ static int devfreq_pm_qos_handler(struct devfreq *devfreq,
 
 struct devfreq_governor devfreq_pm_qos = {
 	.name = "pm_qos",
-	.immutable = 1,
 	.get_target_freq = devfreq_pm_qos_func,
 	.event_handler = devfreq_pm_qos_handler,
 };
